@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusPrint Global Components</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0D1F3C;
+            --accent: #2B4EAA;
+            --accent-s: #EEF2FF;
+            --gd: #1F2937;
+            --grey-mid: #6B7280;
+            --grey: #9CA3AF;
+            --gl: #F9FAFB;
+            --border: #F3F4F6;
+            --bg: #FFFFFF;
+            --body-bg: #ECEEF2;
+            --green: #10B981;
+            --green-s: #ECFDF5;
+            --amber: #F59E0B;
+            --amber-s: #FFFBEB;
+            --red: #EF4444;
+            --red-s: #FEF2F2;
+        }
+
+        body {
+            background: var(--body-bg);
+            margin: 0;
+            padding: 40px;
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .phone-frame {
+            width: 320px;
+            background: var(--bg);
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+            overflow: hidden;
+            position: relative;
+            min-height: 700px;
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            border: 8px solid #fff; /* to simulate device edge */
+            box-sizing: border-box;
+        }
+
+        .section-label {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--grey);
+            margin: 20px 0 12px;
+        }
+
+        /* 1. Session Timer */
+        .timer-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: var(--gl);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+        .timer-label { font-size: 13px; font-weight: 600; color: var(--gd); }
+        .timer-meta { font-size: 11px; font-weight: 300; color: var(--grey); }
+        .timer-pill {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .timer-normal { background: var(--accent-s); color: var(--accent); }
+        .timer-warning { background: var(--amber-s); color: var(--amber); }
+        .timer-critical { background: var(--red-s); color: var(--red); }
+
+        /* 2. Progress Stepper */
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .step {
+            display: flex;
+            gap: 16px;
+            position: relative;
+            padding-bottom: 24px;
+        }
+        .step:last-child { padding-bottom: 0; }
+        .step-line {
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .step-indicator {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            z-index: 1;
+            box-sizing: border-box;
+        }
+        .step.completed .step-indicator { background: var(--green); color: #fff; }
+        .step.active .step-indicator { background: var(--accent); color: #fff; }
+        .step.inactive .step-indicator { background: #fff; border: 2px solid var(--border); color: var(--grey); }
+        .step.completed .step-line { background: var(--green); }
+        .step-content { padding-top: 2px; }
+        .step-title { font-size: 14px; font-weight: 600; color: var(--gd); }
+        .step-desc { font-size: 12px; font-weight: 300; color: var(--grey); margin-top: 4px; }
+        .step.inactive .step-title { color: var(--grey); }
+
+        /* 3. Toast Notifications */
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--bg);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+        .toast-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toast.success .toast-icon { background: var(--green-s); color: var(--green); }
+        .toast.error .toast-icon { background: var(--red-s); color: var(--red); }
+        .toast.info .toast-icon { background: var(--accent-s); color: var(--accent); }
+        .toast-text { font-size: 13px; font-weight: 500; color: var(--gd); }
+
+        /* 4. Modals / Dialogs */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(31, 41, 55, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+        }
+        .modal-card {
+            background: var(--bg);
+            border-radius: 24px;
+            padding: 24px 20px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .modal-title { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 22px; font-weight: 600; color: var(--gd); margin-bottom: 8px; }
+        .modal-desc { font-size: 13px; font-weight: 300; color: var(--grey-mid); line-height: 1.5; margin-bottom: 24px; }
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-pill {
+            width: 100%;
+            padding: 13px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary { background: var(--navy); color: #fff; }
+        .btn-danger { background: var(--red); color: #fff; }
+        .btn-ghost { background: none; color: var(--gd); font-weight: 500; }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-s);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: var(--accent);
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Panel 1: Timers & Steppers & Toasts -->
+    <div class="phone-frame">
+        <div class="section-label">Session Timer States</div>
+        <div class="timer-card">
+            <div>
+                <div class="timer-label">Session Active</div>
+                <div class="timer-meta">Secure connection</div>
+            </div>
+            <div class="timer-pill timer-normal">04:30</div>
+        </div>
+        <div class="timer-card">
+            <div>
+                <div class="timer-label">Expiring Soon</div>
+                <div class="timer-meta">Please complete action</div>
+            </div>
+            <div class="timer-pill timer-warning">00:45</div>
+        </div>
+        <div class="timer-card">
+            <div>
+                <div class="timer-label">Critical Timeout</div>
+                <div class="timer-meta">Session ending</div>
+            </div>
+            <div class="timer-pill timer-critical">00:08</div>
+        </div>
+
+        <div class="section-label">Progress Stepper</div>
+        <div class="stepper">
+            <div class="step completed">
+                <div class="step-line"></div>
+                <div class="step-indicator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Upload Documents</div>
+                    <div class="step-desc">2 files selected</div>
+                </div>
+            </div>
+            <div class="step active">
+                <div class="step-line"></div>
+                <div class="step-indicator">2</div>
+                <div class="step-content">
+                    <div class="step-title">Print Settings</div>
+                    <div class="step-desc">Configuring layouts</div>
+                </div>
+            </div>
+            <div class="step inactive">
+                <div class="step-indicator">3</div>
+                <div class="step-content">
+                    <div class="step-title">Payment & Collect</div>
+                    <div class="step-desc">Pending completion</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Toast Notifications</div>
+        <div class="toast success">
+            <div class="toast-icon">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="toast-text">Payment completed successfully</div>
+        </div>
+        <div class="toast error">
+            <div class="toast-icon">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            <div class="toast-text">Connection lost. Try again.</div>
+        </div>
+        <div class="toast info">
+            <div class="toast-icon">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+            <div class="toast-text">Files synced to cloud</div>
+        </div>
+    </div>
+
+    <!-- Panel 2: Modals (Feature Gate & Idle) -->
+    <div class="phone-frame" style="padding: 0;">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='700'%3E%3Crect width='320' height='700' fill='%23ECEEF2'/%3E%3C/svg%3E" alt="bg" style="position:absolute; width:100%; height:100%; object-fit:cover;">
+        
+        <div class="modal-overlay" style="position: absolute; bottom: 50%; top: 0; background: transparent;">
+            <!-- Feature Gate -->
+            <div class="modal-card">
+                <div class="feature-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                </div>
+                <div class="modal-title">Premium Feature</div>
+                <div class="modal-desc">Color printing is restricted to Premium accounts. Upgrade to unlock high-quality color prints.</div>
+                <div class="modal-actions">
+                    <button class="btn-pill btn-primary">Upgrade Now</button>
+                    <button class="btn-pill btn-ghost">Maybe Later</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" style="position: absolute; top: 50%; bottom: 0; background: transparent;">
+            <!-- Idle Warning -->
+            <div class="modal-card">
+                <div class="feature-icon" style="background: var(--amber-s); color: var(--amber);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="modal-title">Are you still there?</div>
+                <div class="modal-desc">Your session has been inactive. You will be logged out in 30 seconds to protect your privacy.</div>
+                <div class="modal-actions">
+                    <button class="btn-pill btn-primary">Continue Session</button>
+                    <button class="btn-pill btn-ghost" style="color: var(--red);">Log Out Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel 3: Confirm Dialog -->
+    <div class="phone-frame" style="padding: 0;">
+        <div class="modal-overlay">
+            <div class="modal-card">
+                <div class="feature-icon" style="background: var(--red-s); color: var(--red);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </div>
+                <div class="modal-title">Delete Document?</div>
+                <div class="modal-desc">Are you sure you want to remove <strong>CS301_Assignment.pdf</strong>? This action cannot be undone.</div>
+                <div class="modal-actions">
+                    <button class="btn-pill btn-danger">Yes, Delete</button>
+                    <button class="btn-pill btn-ghost">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

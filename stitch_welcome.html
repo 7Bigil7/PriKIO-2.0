@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Presidency Print Kiosk - Welcome</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Oswald & Outfit -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&amp;family=Outfit:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            base: '#0D1F3C', // Deep Navy
+                        },
+                        secondary: {
+                            base: '#FFFFFF', // Pure White
+                        },
+                        accent: {
+                            base: '#C9A84C', // Premium Academic Gold
+                        }
+                    },
+                    fontFamily: {
+                        headline: ["Oswald", "sans-serif"],
+                        body: ["Outfit", "sans-serif"],
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float-up': 'floatUp 10s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: 'inset 0 0 10px rgba(201, 168, 76, 0.3), 0 0 20px rgba(201, 168, 76, 0.1)' },
+                            '50%': { boxShadow: 'inset 0 0 20px rgba(201, 168, 76, 0.6), 0 0 40px rgba(201, 168, 76, 0.3)' },
+                        },
+                        floatUp: {
+                            '0%': { transform: 'translateY(100vh) scale(0.5)', opacity: '0' },
+                            '10%': { opacity: '0.5' },
+                            '90%': { opacity: '0.5' },
+                            '100%': { transform: 'translateY(-20vh) scale(1)', opacity: '0' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0D1F3C;
+            background-image: radial-gradient(circle at center, rgba(201, 168, 76, 0.05) 0%, rgba(13, 31, 60, 1) 70%);
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling on welcome screen */
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Ambient star field */
+        .ambient-star {
+            position: absolute;
+            background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            pointer-events: none;
+            filter: sepia(1) saturate(3) hue-rotate(10deg) brightness(1.2); /* Approximate gold tint if image isn't already gold */
+        }
+
+        /* Flight motif layout */
+        .flight-arc {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            height: 120px;
+        }
+        
+        .star-motif {
+            width: 40px;
+            height: 40px;
+            background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ');
+            background-size: contain;
+            background-repeat: no-repeat;
+            filter: drop-shadow(0 0 8px rgba(201,168,76,0.4));
+            transition: all 0.5s ease;
+        }
+        
+        /* Arrange stars in an upward arc */
+        .star-motif:nth-child(1) { transform: translateY(40px) scale(0.6) rotate(-15deg); opacity: 0.4; }
+        .star-motif:nth-child(2) { transform: translateY(20px) scale(0.8) rotate(-5deg); opacity: 0.7; }
+        .star-motif:nth-child(3) { transform: translateY(0px) scale(1.2) rotate(0deg); opacity: 1; }
+        .star-motif:nth-child(4) { transform: translateY(20px) scale(0.8) rotate(5deg); opacity: 0.7; }
+        .star-motif:nth-child(5) { transform: translateY(40px) scale(0.6) rotate(15deg); opacity: 0.4; }
+
+    </style>
+</head>
+<body class="min-h-screen text-secondary-base font-body flex flex-col items-center justify-center relative cursor-pointer" onclick="handleScreenTap()">
+<!-- Ambient background particles (simulating stars/sparks) -->
+<div class="absolute inset-0 pointer-events-none z-0" id="particle-container"></div>
+<!-- Main Content Container -->
+<main class="relative z-10 flex flex-col items-center justify-center w-full max-w-5xl px-8 text-center space-y-12">
+<!-- Header Text -->
+<div class="space-y-4 opacity-0 transform translate-y-8 animate-[fade-in-up_1s_ease-out_forwards]">
+<h2 class="font-headline font-bold text-accent-base tracking-widest uppercase text-xl md:text-2xl drop-shadow-md">
+                Presidency University
+            </h2>
+<h1 class="font-headline font-bold text-5xl md:text-7xl lg:text-8xl leading-tight drop-shadow-2xl text-white">
+                Welcome to<br/>Presidency Print Kiosk
+            </h1>
+</div>
+<!-- Visual Motif: Birds taking flight / Arc -->
+<div class="flight-arc opacity-0 animate-[fade-in_1.5s_ease-out_0.5s_forwards]">
+<div class="star-motif"></div>
+<div class="star-motif"></div>
+<div class="star-motif"></div>
+<div class="star-motif"></div>
+<div class="star-motif"></div>
+</div>
+<!-- Primary Action Area -->
+<div class="mt-16 opacity-0 animate-[fade-in-up_1s_ease-out_1s_forwards]">
+<button class="group relative px-12 py-6 rounded-2xl bg-primary-base border border-accent-base/30 text-white font-headline text-2xl md:text-3xl font-medium tracking-wide overflow-hidden transition-all duration-500 hover:scale-105 hover:border-accent-base animate-pulse-glow shadow-2xl z-20">
+<span class="relative z-10 flex items-center gap-4">
+                    Tap Anywhere to Begin
+                    <span class="material-symbols-outlined text-accent-base text-4xl group-hover:translate-x-2 transition-transform duration-300">
+                        touch_app
+                    </span>
+</span>
+<!-- Inner glow effect on hover -->
+<div class="absolute inset-0 bg-accent-base/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+</button>
+<p class="mt-6 font-body text-secondary-base/60 text-lg tracking-wide">
+                Please have your student ID ready.
+            </p>
+</div>
+</main>
+<!-- Decorative Top Corner Stars -->
+<div class="absolute top-8 left-8 w-12 h-12 bg-[url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ')] bg-contain bg-no-repeat opacity-20 pointer-events-none"></div>
+<div class="absolute top-8 right-8 w-12 h-12 bg-[url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ')] bg-contain bg-no-repeat opacity-20 pointer-events-none transform rotate-90"></div>
+<div class="absolute bottom-8 left-8 w-12 h-12 bg-[url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ')] bg-contain bg-no-repeat opacity-20 pointer-events-none transform -rotate-90"></div>
+<div class="absolute bottom-8 right-8 w-12 h-12 bg-[url('https://lh3.googleusercontent.com/aida/AP1WRLvIjkCtEHNfmtbbZjMBQ6VpGnjr_vhi5IBJM2vgjTjHUZhx4vuQhlSYLD6-exEZEENSY5EACcyV2LsUhbsUX1zJapnL4ssSyXfKq7HBvYgPGVyLThMvcV0jYsIDfr3NGKwW857rA3Y5pAySbFe9wnnrVObwlPbQc_z3ds7-SWvmtKqwPYY9BYo7iDtYG3DK6Z6RjHBxR-QiCi_R9eEXL4DRk1w9sa_794W9PP1v6cp54Re8R1eY5NvitQ')] bg-contain bg-no-repeat opacity-20 pointer-events-none transform rotate-180"></div>
+<script>
+        // Handle full screen tap
+        function handleScreenTap() {
+            // Add a brief ripple or visual feedback here before redirecting
+            document.body.style.transition = 'opacity 0.5s ease';
+            document.body.style.opacity = '0';
+            
+            // Simulate navigation to next screen
+            setTimeout(() => {
+                console.log("Navigating to main kiosk interface...");
+                // window.location.href = '/dashboard'; 
+                // Reset for demo purposes
+                document.body.style.opacity = '1';
+            }, 600);
+        }
+
+        // Generate ambient floating stars
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('particle-container');
+            const numParticles = 15;
+            
+            for (let i = 0; i < numParticles; i++) {
+                const star = document.createElement('div');
+                star.classList.add('ambient-star');
+                
+                // Random properties
+                const size = Math.random() * 20 + 10; // 10px to 30px
+                const left = Math.random() * 100; // 0% to 100%
+                const delay = Math.random() * 10; // 0s to 10s
+                const duration = Math.random() * 10 + 10; // 10s to 20s
+                
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${left}%`;
+                star.style.animation = `floatUp ${duration}s linear ${delay}s infinite`;
+                
+                container.appendChild(star);
+            }
+        });
+
+        // Add custom Tailwind animations missing from standard config via style tag injection for simplicity in single file
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fade-in-up {
+                0% { opacity: 0; transform: translateY(30px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes fade-in {
+                0% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

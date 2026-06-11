@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Presidency University - Print Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&amp;family=Outfit:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0D1F3C',
+                        gold: '#C9A84C',
+                    },
+                    fontFamily: {
+                        headline: ['Oswald', 'sans-serif'],
+                        body: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fly-up': 'flyUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '1', textShadow: '0 0 15px rgba(201, 168, 76, 0.5)' },
+                            '50%': { opacity: '0.7', textShadow: '0 0 5px rgba(201, 168, 76, 0.2)' },
+                        },
+                        flyUp: {
+                            '0%': { transform: 'scale(0)', opacity: '0' },
+                            '60%': { transform: 'scale(1.2)', opacity: '1' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #0D1F3C;
+            background-image: radial-gradient(rgba(201, 168, 76, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .glass-card {
+            background: rgba(13, 31, 60, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        .star-accent {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #C9A84C;
+            font-size: 1.5rem;
+        }
+
+        .btn-glow {
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.3), 0 4px 15px rgba(201, 168, 76, 0.4);
+        }
+        
+        /* Transition States */
+        #processing-state { display: flex; }
+        #success-state { display: none; }
+        
+        .show-success #processing-state { display: none; }
+        .show-success #success-state { display: flex; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col font-body text-white overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-8 py-4 h-20 bg-[#0D1F3C] border-b border-[#FFFFFF]/10 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.5)] docked full-width top-0 z-50">
+<div class="text-2xl font-headline font-bold text-[#FFFFFF] uppercase tracking-widest">
+            Presidency University
+        </div>
+<div class="flex gap-6">
+<button class="text-[#FFFFFF]/70 hover:text-[#FFFFFF] transition-colors hover:bg-[#FFFFFF]/5 hover:scale-105 transition-all duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+<button class="text-[#C9A84C] border-b-2 border-[#C9A84C] pb-1 hover:bg-[#FFFFFF]/5 hover:scale-105 transition-all duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined">print</span>
+</button>
+<button class="text-[#FFFFFF]/70 hover:text-[#FFFFFF] transition-colors hover:bg-[#FFFFFF]/5 hover:scale-105 transition-all duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex justify-center items-center relative z-10 p-8" id="kiosk-container">
+<!-- GlassCard -->
+<div class="glass-card rounded-xl w-full max-w-2xl p-12 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)]">
+<span class="star-accent">✦</span>
+<!-- Session Banner -->
+<div class="absolute top-4 left-4 flex gap-4 text-xs text-white/50 font-body">
+<span>srishant</span>
+<span>•</span>
+<span>20251CSE0743</span>
+<span>•</span>
+<span>2PHY09</span>
+</div>
+<!-- Processing State -->
+<div class="flex-col items-center gap-8 w-full py-16" id="processing-state">
+<div class="w-24 h-24 border-4 border-navy border-t-gold rounded-full animate-spin"></div>
+<h2 class="font-headline font-bold text-4xl text-gold uppercase tracking-tight animate-pulse-glow">
+                    Processing Print Job...
+                </h2>
+<p class="text-white/70 font-medium">Please wait while your document is sent to the printer.</p>
+</div>
+<!-- Success State -->
+<div class="flex-col items-center gap-8 w-full py-8 opacity-0" id="success-state">
+<div class="relative w-40 h-40 flex justify-center items-center">
+<span class="material-symbols-outlined text-[100px] text-gold animate-fly-up" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<!-- Star Decorations -->
+<img alt="Gold 4-pointed star" class="absolute -top-4 -right-4 w-8 h-8 animate-fly-up" src="https://lh3.googleusercontent.com/aida/AP1WRLvkBtDOsBc_YBybagpKbXBpwy-LThtNr-DpqTVwhGUB4d4RJWrzy8asLs1-DLCReFq0aovqun9sJNxoEGowher4Ya40ICFifmtmmsMZYQ9OEujayKiMIEr_jAGZvdIbMS-7v-YO3-0ylgoPD3jw7QwU-kvBBM68qDq1xa0067jmXWjWTqg1Du9xOlXHpFIHS0w9gitRERmJgLCG1Koc4Dt52YmTm0RaskamLI_CbIl-zfP7OFreB_DScX0" style="animation-delay: 0.1s;"/>
+<img alt="Gold 4-pointed star" class="absolute top-8 -left-8 w-6 h-6 animate-fly-up" src="https://lh3.googleusercontent.com/aida/AP1WRLvkBtDOsBc_YBybagpKbXBpwy-LThtNr-DpqTVwhGUB4d4RJWrzy8asLs1-DLCReFq0aovqun9sJNxoEGowher4Ya40ICFifmtmmsMZYQ9OEujayKiMIEr_jAGZvdIbMS-7v-YO3-0ylgoPD3jw7QwU-kvBBM68qDq1xa0067jmXWjWTqg1Du9xOlXHpFIHS0w9gitRERmJgLCG1Koc4Dt52YmTm0RaskamLI_CbIl-zfP7OFreB_DScX0" style="animation-delay: 0.2s;"/>
+<img alt="Gold 4-pointed star" class="absolute bottom-0 right-4 w-5 h-5 animate-fly-up" src="https://lh3.googleusercontent.com/aida/AP1WRLvkBtDOsBc_YBybagpKbXBpwy-LThtNr-DpqTVwhGUB4d4RJWrzy8asLs1-DLCReFq0aovqun9sJNxoEGowher4Ya40ICFifmtmmsMZYQ9OEujayKiMIEr_jAGZvdIbMS-7v-YO3-0ylgoPD3jw7QwU-kvBBM68qDq1xa0067jmXWjWTqg1Du9xOlXHpFIHS0w9gitRERmJgLCG1Koc4Dt52YmTm0RaskamLI_CbIl-zfP7OFreB_DScX0" style="animation-delay: 0.3s;"/>
+</div>
+<h2 class="font-headline font-bold text-5xl text-white uppercase tracking-tight animate-fly-up" style="animation-delay: 0.1s;">
+                    Success!
+                </h2>
+<p class="text-white/80 font-medium text-lg animate-fly-up" style="animation-delay: 0.2s;">Your document has been printed successfully.</p>
+<button class="mt-8 bg-gold text-navy font-headline font-bold uppercase tracking-wider px-8 py-4 rounded-lg btn-glow hover:-translate-y-1 hover:shadow-xl transition-all duration-300 min-w-[200px] min-h-[48px] animate-fly-up" style="animation-delay: 0.3s;">
+                    Return to Home
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="flex justify-between items-center px-10 py-4 w-full bg-[#0D1F3C] border-t border-[#FFFFFF]/10 docked full-width bottom-0 z-50">
+<p class="font-body text-xs text-[#FFFFFF]/50">© 2024 Presidency University. All Rights Reserved. IT Support Ext: 404.</p>
+<div class="flex gap-4">
+<a class="font-body text-xs text-[#FFFFFF]/50 hover:text-[#FFFFFF] hover:text-[#C9A84C] transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-xs text-[#FFFFFF]/50 hover:text-[#FFFFFF] hover:text-[#C9A84C] transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-xs text-[#FFFFFF]/50 hover:text-[#FFFFFF] hover:text-[#C9A84C] transition-colors" href="#">Help Desk</a>
+</div>
+</footer>
+<script>
+        // Simulate print processing
+        setTimeout(() => {
+            const container = document.getElementById('kiosk-container');
+            const successState = document.getElementById('success-state');
+            
+            container.classList.add('show-success');
+            
+            // Trigger animations
+            successState.classList.remove('opacity-0');
+        }, 3000); // 3 seconds delay
+    </script>
+</body></html>

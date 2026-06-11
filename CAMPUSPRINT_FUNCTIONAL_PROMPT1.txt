@@ -1,0 +1,805 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║     CAMPUSPRINT — FUNCTIONAL + RESPONSIVE MASTER PROMPT                 ║
+║     Presidency University · Campus Print Service                        ║
+║     Goal: Wire up the existing UI to a real backend + make it           ║
+║     fully responsive across mobile / tablet / desktop                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+The UI is already built and pixel-perfect (screenshots attached as
+reference). DO NOT redesign anything. DO NOT change colors, fonts,
+spacing, or component structure. Your only jobs are:
+
+  1. Connect every screen to a real working backend
+  2. Make every screen fully responsive (mobile → tablet → desktop)
+  3. Follow GSD at all times — plan first, then execute fast
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 0 — GSD PLANNING PROTOCOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before writing a single line of code, produce this exact plan:
+
+  GSD PLAN
+  ────────
+  [ ] Step 1 — list every file you will touch
+  [ ] Step 2 — list every API endpoint you will create or call
+  [ ] Step 3 — list every responsive breakpoint you will handle
+  [ ] Step 4 — list every state variable needed per screen
+  [ ] Step 5 — list any third-party packages needed (minimal)
+
+After the plan is approved (user says "go"), execute every step in
+order. Check off each item as you complete it. No skipping. No
+asking questions mid-execution. If blocked, state the blocker in
+one line and continue to the next item.
+
+GSD RULES:
+  - Plan first, execute second, never simultaneously
+  - One file changed per commit message in comments
+  - No partial implementations — every function must be complete
+  - No TODOs left in code — if it can't be done now, say why
+  - No console.log left in production code
+  - Every API call needs loading state, success state, error state
+  - Every form needs validation before submission
+  - Test every happy path AND every error path mentally before shipping
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — TECH STACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend : Next.js 14 (App Router) + React
+Styling  : CSS Modules or globals.css — NO Tailwind, NO MUI, NO
+           Chakra, NO styled-components. Raw CSS only.
+Backend  : Next.js API Routes (/app/api/*) — serverless functions
+Database : Supabase (Postgres) — for users, print jobs, OTP,
+           payment records, cloud documents
+Auth     : Supabase Auth (email/password + magic link)
+Payments : Razorpay (UPI + QR generation)
+Storage  : Supabase Storage (for uploaded documents)
+Realtime : Supabase Realtime (for queue position updates)
+OTP      : Generated server-side, stored in Supabase, 2min TTL
+
+Environment variables needed in .env.local:
+  NEXT_PUBLIC_SUPABASE_URL=
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=
+  SUPABASE_SERVICE_ROLE_KEY=
+  RAZORPAY_KEY_ID=
+  RAZORPAY_KEY_SECRET=
+  NEXT_PUBLIC_RAZORPAY_KEY_ID=
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — DATABASE SCHEMA (Supabase / Postgres)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create these tables exactly:
+
+-- USERS (extends Supabase auth.users)
+profiles (
+  id            uuid references auth.users primary key,
+  full_name     text,
+  student_id    text unique,
+  department    text,
+  year          int,
+  wallet_balance decimal(10,2) default 0,
+  role          text default 'student', -- student | faculty | admin
+  created_at    timestamptz default now()
+)
+
+-- PRINT JOBS
+print_jobs (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references profiles(id),
+  file_name     text not null,
+  file_url      text not null,        -- Supabase storage URL
+  file_size_mb  decimal(6,2),
+  page_count    int,
+  color_mode    text,                 -- bw | color
+  sides         text,                 -- simplex | duplex
+  page_range    text,                 -- e.g. "1-12" or "all"
+  copies        int default 1,
+  sheet_count   int,
+  kiosk_id      text,
+  status        text default 'pending',
+                -- pending | processing | sent | ready | collected | failed
+  total_amount  decimal(8,2),
+  otp           text,
+  otp_expires_at timestamptz,
+  payment_id    text,                 -- Razorpay payment ID
+  payment_status text default 'unpaid', -- unpaid | paid | failed | refunded
+  created_at    timestamptz default now(),
+  updated_at    timestamptz default now()
+)
+
+-- KIOSKS
+kiosks (
+  id            text primary key,     -- e.g. "LIB-04"
+  name          text,
+  location      text,
+  building      text,
+  floor         text,
+  is_online     boolean default true,
+  queue_count   int default 0,
+  last_ping     timestamptz
+)
+
+-- TRANSACTIONS
+transactions (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references profiles(id),
+  print_job_id  uuid references print_jobs(id),
+  amount        decimal(8,2),
+  method        text,                 -- upi | qr | wallet | card
+  razorpay_order_id text,
+  razorpay_payment_id text,
+  status        text,                 -- created | paid | failed
+  created_at    timestamptz default now()
+)
+
+-- CLOUD DOCUMENTS
+cloud_documents (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references profiles(id),
+  provider      text,                 -- gdrive | dropbox | local
+  file_name     text,
+  file_size_mb  decimal(6,2),
+  mime_type     text,
+  provider_file_id text,
+  storage_url   text,
+  created_at    timestamptz default now()
+)
+
+Row Level Security: enable on all tables.
+  profiles: user can only read/update their own row
+  print_jobs: user can only read their own jobs
+  transactions: user can only read their own transactions
+  cloud_documents: user can only read their own documents
+  kiosks: all authenticated users can read
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — API ROUTES (Next.js /app/api/)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build every one of these. Each must handle errors and return
+consistent { data, error } JSON responses.
+
+AUTH
+  POST /api/auth/login        → email + password → session
+  POST /api/auth/logout       → clear session
+  POST /api/auth/register     → create profile row after signup
+  GET  /api/auth/me           → return current user + wallet balance
+
+FILE UPLOAD
+  POST /api/upload            → multipart/form-data → upload to
+                                Supabase Storage → return file URL,
+                                page count (use pdf-lib to count pages),
+                                file size
+  DELETE /api/upload/:id      → remove file from storage
+
+PRINT JOBS
+  POST /api/print-jobs        → create print job record, calculate
+                                cost, return job ID + total amount
+  GET  /api/print-jobs        → list all jobs for current user
+  GET  /api/print-jobs/:id    → get single job with status
+  PATCH /api/print-jobs/:id/status → update job status (kiosk webhook)
+
+COST CALCULATION (pure function, also expose as API)
+  POST /api/calculate-cost
+    body: { pageCount, colorMode, sides, copies, pageRange }
+    returns: { sheetCount, baseCost, serviceFee, total }
+
+    Rules:
+      B&W simplex   → ₹2.00/sheet
+      B&W duplex    → ₹1.75/sheet (paper saving)
+      Color standard→ ₹8.00/sheet
+      Color glossy  → ₹15.00/sheet
+      Service fee   → ₹2.00 flat
+      Faculty discount → 10% if role === 'faculty'
+
+PAYMENT
+  POST /api/payment/create-order
+    → create Razorpay order
+    → create transaction record (status: created)
+    → return { orderId, amount, currency, keyId }
+
+  POST /api/payment/verify
+    → verify Razorpay signature (HMAC SHA256)
+    → update transaction status → paid
+    → update print_job payment_status → paid
+    → update print_job status → processing
+    → deduct from wallet if wallet payment
+    → return { success, printJobId }
+
+  POST /api/payment/webhook
+    → Razorpay webhook handler
+    → verify webhook signature
+    → handle payment.captured, payment.failed events
+
+OTP
+  POST /api/otp/generate
+    → generate 6-digit OTP
+    → store hashed OTP in print_jobs with 2-minute expiry
+    → return { otp, expiresAt } (only to authenticated owner)
+
+  POST /api/otp/verify
+    body: { printJobId, otp }
+    → verify OTP matches and not expired
+    → update print_job status → collected
+    → return { success }
+
+  POST /api/otp/refresh
+    → generate new OTP, reset timer
+    → return { otp, expiresAt }
+
+KIOSKS
+  GET  /api/kiosks             → list all kiosks with status
+  GET  /api/kiosks/:id         → single kiosk + queue count
+  POST /api/kiosks/:id/ping    → kiosk heartbeat (updates last_ping)
+
+QUEUE (Supabase Realtime subscription on client)
+  GET  /api/queue/:printJobId  → current position + estimated wait
+  Realtime channel: print_jobs:id=eq.{printJobId}
+  Subscribe to status changes on the client using supabase.channel()
+
+CLOUD DOCUMENTS
+  POST /api/cloud/connect      → store OAuth token for provider
+  GET  /api/cloud/files        → list files from connected provider
+  POST /api/cloud/import       → copy provider file to Supabase storage
+
+USER / WALLET
+  GET  /api/user/history       → paginated print history
+  POST /api/user/topup         → add credits via Razorpay
+  GET  /api/user/balance       → current wallet balance
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — SCREEN-BY-SCREEN WIRING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each screen below: keep the existing JSX/CSS exactly.
+Only add state, API calls, loading states, and error handling.
+
+── SCREEN 0: Landing Page ──────────────────────────────────────────────
+File: app/page.tsx
+
+State needed:
+  none (static page)
+
+Wiring:
+  "Start Printing" button → router.push('/upload') if logged in,
+                            else router.push('/auth/login')
+  "Scan QR to Print" → open QR scanner modal (use html5-qrcode)
+                        on scan success → router.push('/verify/[jobId]')
+  Profile icon → router.push('/profile') if logged in,
+                 else router.push('/auth/login')
+  Hamburger → open mobile drawer (local useState)
+
+Responsive:
+  Mobile (<640px):
+    Hero headline: clamp(36px, 8vw, 56px)
+    Rotating rings: scale down to 80vw, shift right: -10vw
+    CTA buttons: full width, stacked
+    Sticky bar: width 92vw, centered
+  Tablet (640–1024px):
+    Headline: clamp(48px, 6vw, 64px)
+    Rings: 60vw
+  Desktop (>1024px): as designed
+
+── SCREEN 1: Upload ────────────────────────────────────────────────────
+File: app/upload/page.tsx
+
+State needed:
+  file: File | null
+  uploading: boolean
+  uploadProgress: number (0-100)
+  error: string | null
+  uploadedFile: { url, pageCount, fileSizeMb, fileName } | null
+
+Wiring:
+  "Upload Document" button → trigger hidden <input type="file">
+    accept: .pdf,.docx,.pptx,.jpg,.jpeg,.png
+    onChange → call POST /api/upload with FormData
+    show progress bar during upload (xhr with progress event)
+    on success → store uploadedFile in state + sessionStorage
+    on success → router.push('/print-settings')
+  
+  Drag and drop:
+    onDragOver → set dragActive: true (add drag-active class)
+    onDrop → extract file → same upload flow
+    onDragLeave → set dragActive: false
+
+  Error states:
+    File too large (>50MB) → show error inline, do not upload
+    Wrong file type → show error inline
+    Upload failed → show retry button
+
+Responsive:
+  Mobile: upload zone fills screen width minus 32px padding
+  Tablet/Desktop: upload zone max-width 480px, centered
+  Printer illustration: scales with container using vw units
+
+── SCREEN 2: Print Settings ────────────────────────────────────────────
+File: app/print-settings/page.tsx
+
+State needed:
+  colorMode: 'bw' | 'color'  (default 'bw')
+  sides: 'simplex' | 'duplex' (default 'duplex')
+  pageRange: string           (default '1-{pageCount}')
+  copies: number              (default 1)
+  cost: { sheetCount, baseCost, serviceFee, total } | null
+  calculating: boolean
+
+Wiring:
+  On mount → read uploadedFile from sessionStorage
+  On mount → call POST /api/calculate-cost with defaults
+  
+  Every time colorMode, sides, pageRange, copies changes:
+    → debounce 300ms → call POST /api/calculate-cost
+    → update cost display in sticky bottom bar
+    → animate the total number change (CSS transition)
+  
+  Page range validation:
+    Parse "1-12" or "3,5,7-9" format
+    Show error if range exceeds pageCount
+    Calculate actual page count from range before sending
+  
+  "Confirm & Pay" button:
+    → call POST /api/print-jobs with all settings
+    → on success → store printJobId in sessionStorage
+    → router.push('/payment')
+    → button shows loading spinner during API call
+
+Responsive:
+  Mobile (<640px):
+    Toggle cards: 2-col grid stays, reduce padding to 10px 12px
+    Page range row: stack label + pill vertically if needed
+    Sticky bar: fixed bottom, full width, safe-area-inset-bottom
+  Tablet: as designed (290px phone card centered)
+  Desktop: phone card centered, max-width 400px, with side padding
+
+── SCREEN 3: Payment ───────────────────────────────────────────────────
+File: app/payment/page.tsx
+
+State needed:
+  paymentStatus: 'idle' | 'loading' | 'waiting' | 'success' | 'failed'
+  razorpayOrder: { orderId, amount } | null
+  qrImageUrl: string | null
+  pollingInterval: NodeJS.Timeout | null
+
+Wiring:
+  On mount:
+    → GET printJobId from sessionStorage
+    → call POST /api/payment/create-order
+    → load Razorpay script dynamically
+    → generate QR code image from Razorpay UPI link using qrcode library
+    → display QR
+    → start polling GET /api/print-jobs/:id every 3s
+      on status === 'processing' → router.push('/sending')
+
+  "Pay with UPI Apps" button:
+    → open Razorpay checkout modal (rzp.open())
+    → Razorpay modal handles UPI app redirect
+    → on payment.success handler:
+       call POST /api/payment/verify
+       router.push('/sending')
+    → on payment.failed handler:
+       set paymentStatus: 'failed'
+       show failed state UI
+
+  QR code:
+    Generate using: npm install qrcode
+    UPI deep link format:
+      upi://pay?pa=campusprint@upi&pn=CampusPrint&
+      am={amount}&tr={orderId}&tn=CampusPrint+Job
+    Render as <img> from data URL
+    Show "WAITING FOR PAYMENT CONFIRMATION..." marquee
+    Poll every 3s for status change
+
+  "Cancel Order" button:
+    → confirm dialog → call PATCH /api/print-jobs/:id/status
+      { status: 'failed' } → router.push('/upload')
+    → clear polling interval
+
+Responsive:
+  Mobile: full screen, QR zone 200×200px centered
+  Tablet: phone card 400px centered
+  Desktop: phone card 400px centered, side whitespace
+
+── SCREEN 4: Sending to Kiosk ──────────────────────────────────────────
+File: app/sending/page.tsx
+
+State needed:
+  queuePosition: number
+  totalInQueue: number
+  estimatedWait: number (seconds)
+  jobStatus: string
+  connected: boolean
+
+Wiring:
+  On mount → subscribe to Supabase Realtime channel:
+    supabase.channel('job-' + printJobId)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'print_jobs',
+        filter: 'id=eq.' + printJobId
+      }, (payload) => {
+        update jobStatus from payload.new.status
+        if status === 'ready' → router.push('/collect')
+      })
+      .subscribe()
+
+  Poll GET /api/queue/:printJobId every 5s:
+    → update queuePosition, totalInQueue, estimatedWait
+    → animate queue number change
+
+  Circular progress ring:
+    Animate based on queue position:
+      full ring when position === totalInQueue (just joined)
+      empty ring when position === 1 (next up)
+    Use SVG stroke-dashoffset interpolation
+
+  "Cancel Transaction" → confirm → PATCH status failed → /upload
+
+Responsive:
+  Mobile: full screen centered layout
+  All screen sizes: max-width 400px phone card centered
+
+── SCREEN 5: Ready to Collect (OTP) ────────────────────────────────────
+File: app/collect/page.tsx
+
+State needed:
+  otp: string
+  expiresAt: Date | null
+  secondsLeft: number
+  otpStatus: 'active' | 'warning' | 'critical' | 'expired'
+  refreshing: boolean
+
+Wiring:
+  On mount:
+    → call POST /api/otp/generate
+    → store otp + expiresAt
+    → start countdown interval (every 1s):
+        secondsLeft = Math.floor((expiresAt - now) / 1000)
+        if secondsLeft <= 0 → otpStatus = 'expired', clear interval
+        if secondsLeft <= 8 → otpStatus = 'critical'
+        if secondsLeft <= 15 → otpStatus = 'warning'
+    → SVG ring animates: dashoffset = (1 - secondsLeft/120) * 408
+
+  OTP ring color:
+    active   → stroke: #2B4EAA
+    warning  → stroke: #F59E0B
+    critical → stroke: #EF4444
+
+  "Refresh Code" button:
+    → call POST /api/otp/refresh
+    → reset otp, expiresAt, secondsLeft, otpStatus
+    → restart countdown interval
+
+  QR code on collect screen:
+    Generate QR encoding: campusprint://collect/{printJobId}/{otp}
+    This lets kiosk scan and auto-verify
+
+  Supabase Realtime:
+    Subscribe to print_jobs for this job
+    On status → 'collected': show success animation → /receipt
+
+Responsive:
+  Mobile: full screen, OTP ring 160px diameter
+  Tablet/Desktop: phone card centered, 400px max
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — RESPONSIVE SYSTEM (apply to every screen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use these breakpoints in globals.css:
+
+/* Mobile first */
+/* xs: 0–479px    (small phones) */
+/* sm: 480–639px  (large phones) */
+/* md: 640–1023px (tablets)      */
+/* lg: 1024–1279px (laptops)     */
+/* xl: 1280px+    (desktop)      */
+
+@media (max-width: 479px) { /* xs — small phones */ }
+@media (min-width: 480px) { /* sm — large phones */ }
+@media (min-width: 640px) { /* md — tablets      */ }
+@media (min-width: 1024px){ /* lg — laptops      */ }
+@media (min-width: 1280px){ /* xl — desktop      */ }
+
+PHONE CARD PATTERN (screens 1–5 use this):
+  .phone-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    min-height: 100svh;      /* svh for mobile browser chrome */
+    background: #fff;
+    border-radius: 0;        /* full screen on mobile */
+  }
+  @media (min-width: 640px) {
+    .phone-card {
+      min-height: auto;
+      border-radius: 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+      margin: 40px auto;
+    }
+  }
+
+STICKY BOTTOM BAR:
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  padding-bottom: env(safe-area-inset-bottom); /* iPhone notch */
+
+  @media (min-width: 640px) {
+    position: sticky;   /* inside phone card on tablet/desktop */
+    bottom: 0;
+    border-radius: 0 0 36px 36px;
+  }
+
+TYPOGRAPHY RESPONSIVE:
+  Hero headline: font-size: clamp(32px, 7vw, 80px)
+  Screen title:  font-size: clamp(18px, 4vw, 22px)
+  Body:          font-size: clamp(12px, 3vw, 14px)
+  Always use clamp() — never fixed px for headlines
+
+TOUCH TARGETS:
+  All buttons: min-height 44px (Apple HIG standard)
+  All tap areas: min-width 44px
+  Numpad keys: min-height 52px
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — STATE MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use React Context for global state. Create:
+
+// context/PrintContext.tsx
+interface PrintState {
+  // Auth
+  user: Profile | null
+  // Current print job being built
+  uploadedFile: UploadedFile | null
+  printSettings: PrintSettings | null
+  printJob: PrintJob | null
+  // Payment
+  paymentOrder: RazorpayOrder | null
+  // OTP
+  otp: string | null
+  otpExpiresAt: Date | null
+}
+
+Persist to sessionStorage so page refresh doesn't lose state.
+Clear all print state after job is collected or failed.
+
+DO NOT use Redux. DO NOT use Zustand. Plain React Context only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — ERROR HANDLING (every screen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every API call must have 3 states rendered in the UI:
+  1. Loading  → show spinner or skeleton, disable buttons
+  2. Success  → show data, enable next action
+  3. Error    → show inline error message, show retry button
+
+Error message placement:
+  Form errors → below the field, red text 12px
+  API errors  → toast notification (top-right, 4s auto-dismiss)
+  Fatal errors → full screen error with "Try Again" button
+
+Toast component spec:
+  Position: fixed top-right, 16px from edge
+  Width: 320px max, 100% on mobile
+  Colors:
+    success → bg #ECFDF5, border #10B981, text #065F46
+    error   → bg #FEF2F2, border #EF4444, text #991B1B
+    info    → bg #EEF2FF, border #2B4EAA, text #1E3A8A
+  Auto dismiss: 4000ms
+  Manual dismiss: × button
+  Stack multiple toasts vertically
+
+Network error handling:
+  Detect offline → show "No internet connection" banner
+  use navigator.onLine + 'online'/'offline' event listeners
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — LOADING & SKELETON STATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every data-driven component needs a skeleton:
+
+CSS for skeleton pulse:
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+  .skeleton {
+    background: #F3F4F6;
+    border-radius: 6px;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+Skeleton shapes to use:
+  Text line: .skeleton height 14px, width varies, border-radius 4px
+  Amount:    .skeleton height 36px, width 120px
+  File card: .skeleton height 68px, full width, border-radius 14px
+  Button:    .skeleton height 48px, full width, border-radius 9999px
+
+Button loading state:
+  Show spinner SVG (animated rotating circle) inside button
+  Disable pointer-events during loading
+  Keep button same size — do not collapse
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 9 — PACKAGES TO INSTALL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Install exactly these — nothing else:
+
+  npm install @supabase/supabase-js   # database + auth + realtime
+  npm install @supabase/ssr           # Next.js SSR helpers
+  npm install razorpay                # payment (server-side)
+  npm install qrcode                  # QR code generation
+  npm install pdf-lib                 # PDF page count detection
+  npm install html5-qrcode            # QR scanner (landing page)
+  npm install crypto                  # webhook signature (built-in Node)
+
+DO NOT install:
+  axios (use native fetch)
+  moment (use native Date)
+  lodash (write the utils yourself)
+  any UI component library
+  any CSS framework
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 10 — FILE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+app/
+  page.tsx                    ← Landing
+  layout.tsx                  ← Root layout with fonts + context
+  globals.css                 ← All CSS variables + base styles
+  auth/
+    login/page.tsx
+    register/page.tsx
+  upload/page.tsx             ← Screen 1
+  print-settings/page.tsx     ← Screen 2
+  payment/page.tsx            ← Screen 3
+  sending/page.tsx            ← Screen 4 (kiosk sending)
+  collect/page.tsx            ← Screen 5 (OTP)
+  receipt/page.tsx            ← Print receipt
+  profile/page.tsx            ← Profile + history
+  cloud/page.tsx              ← Cloud documents
+  activity/page.tsx           ← Print activity
+  api/
+    auth/
+      login/route.ts
+      logout/route.ts
+      me/route.ts
+    upload/route.ts
+    calculate-cost/route.ts
+    print-jobs/
+      route.ts
+      [id]/route.ts
+      [id]/status/route.ts
+    payment/
+      create-order/route.ts
+      verify/route.ts
+      webhook/route.ts
+    otp/
+      generate/route.ts
+      verify/route.ts
+      refresh/route.ts
+    kiosks/
+      route.ts
+      [id]/route.ts
+    queue/[printJobId]/route.ts
+    cloud/
+      connect/route.ts
+      files/route.ts
+    user/
+      history/route.ts
+      balance/route.ts
+      topup/route.ts
+
+context/
+  PrintContext.tsx
+  AuthContext.tsx
+
+lib/
+  supabase/
+    client.ts               ← browser client
+    server.ts               ← server client
+    middleware.ts
+  razorpay.ts
+  calculate-cost.ts         ← pure cost calculation function
+  generate-otp.ts
+  pdf-utils.ts
+
+components/
+  Toast/
+    Toast.tsx
+    Toast.module.css
+  Spinner/
+    Spinner.tsx
+  Skeleton/
+    Skeleton.tsx
+  OTPRing/
+    OTPRing.tsx             ← animated SVG ring component
+  QRCode/
+    QRDisplay.tsx
+  ProgressRing/
+    ProgressRing.tsx
+
+middleware.ts                 ← protect /upload, /payment, etc.
+                                redirect to /auth/login if no session
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 11 — SECURITY RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. Never expose SUPABASE_SERVICE_ROLE_KEY to the client
+  2. Never expose RAZORPAY_KEY_SECRET to the client
+  3. Always verify Razorpay webhook signatures server-side
+  4. Always verify payment server-side before marking job as paid
+  5. OTPs must be hashed (bcrypt) before storing — never store plain
+  6. File uploads: validate MIME type server-side, not just extension
+  7. File size limit: 50MB enforced server-side
+  8. All API routes must check auth session before processing
+  9. Rate limit OTP generation: max 5 per job per hour
+  10. Supabase RLS is the last line of defense — always enabled
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 12 — HOW TO START (exact order)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tell the AI to execute in this exact order:
+
+PHASE 1 — FOUNDATION (do this first, nothing else)
+  1. Create Supabase project, run schema SQL above
+  2. Enable RLS on all tables, write policies
+  3. Set up .env.local with all keys
+  4. Install all packages from Section 9
+  5. Create lib/supabase/client.ts and server.ts
+  6. Create middleware.ts for route protection
+  7. Wire up AuthContext
+  8. Test: can a user sign up, log in, and see /upload?
+
+PHASE 2 — UPLOAD FLOW
+  9.  Wire up /upload page (file input + drag drop + API)
+  10. Create /api/upload route (Supabase Storage)
+  11. Create /api/calculate-cost route
+  12. Wire up /print-settings page (real cost calculation)
+  13. Create /api/print-jobs route (create job)
+  14. Test: can a user upload a PDF and see the correct cost?
+
+PHASE 3 — PAYMENT
+  15. Create Razorpay account, get test keys
+  16. Create /api/payment/create-order
+  17. Create /api/payment/verify
+  18. Wire up /payment page (Razorpay modal + QR)
+  19. Create /api/payment/webhook
+  20. Test: can a user pay ₹23 in test mode and see job update?
+
+PHASE 4 — OTP + COLLECT
+  21. Create /api/otp/generate, /verify, /refresh
+  22. Wire up /sending page (Realtime subscription)
+  23. Wire up /collect page (OTP ring + countdown + refresh)
+  24. Test: does the OTP expire after 2 minutes?
+  25. Test: does the page navigate automatically when job is ready?
+
+PHASE 5 — RESPONSIVE
+  26. Apply phone-card pattern to screens 1–5
+  27. Apply clamp() to all font sizes
+  28. Add safe-area-inset-bottom to sticky bars
+  29. Test on 375px (iPhone SE), 390px (iPhone 14),
+      768px (iPad), 1280px (desktop)
+
+PHASE 6 — POLISH
+  30. Add skeleton loading states to all data-driven screens
+  31. Add Toast component and wire to all API error paths
+  32. Add offline detection banner
+  33. Add loading spinners to all buttons
+  34. Final test: complete happy path start to finish
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF CAMPUSPRINT FUNCTIONAL MASTER PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

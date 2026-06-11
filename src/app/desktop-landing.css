@@ -1,0 +1,17 @@
+.desktop-only-landing {
+  background: #FFFFFF;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #0D1F3C;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+/* Because globals.css has body padding 40px, we should reset it for the landing page */
+body:has(.desktop-only-landing) {
+  padding: 0;
+  margin: 0;
+  background: #FFFFFF;
+}

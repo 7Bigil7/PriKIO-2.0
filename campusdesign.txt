@@ -1,0 +1,4567 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║        CAMPUSPRINT — COMPLETE MASTER PROMPT WITH EMBEDDED CODE          ║
+║        Presidency University · Official Campus Print Service             ║
+║        Version: FINAL · All screens locked · Antigravity + GSD          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HOW TO USE THIS PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is a self-contained master prompt for building CampusPrint.
+Every locked screen's complete HTML+CSS+JS code is embedded below.
+
+When asking AI to build a new screen or component:
+1. Paste this entire prompt first
+2. Then describe what you want built
+3. The AI must match every design token, component pattern,
+   and code convention shown in the locked code below exactly
+4. No new design patterns, no external libraries, no deviations
+
+When asking AI to modify an existing screen:
+1. Paste this prompt
+2. Reference the screen by its label (e.g. SCREEN_4_PAYMENT)
+3. Describe only what changes — everything else stays identical
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION A — DESIGN SYSTEM (source of truth)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+── FONTS ──
+Serif  : Cormorant Garamond (italic 600) — headlines, screen titles,
+         large amounts, OTP codes, drawer labels
+Sans   : DM Sans (300/400/500/600/700) — everything else
+
+Google Fonts import (always include this exact link):
+  https://fonts.googleapis.com/css2?family=Cormorant+Garamond:
+  ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600;700
+  &display=swap
+
+── COLOR TOKENS (copy these :root vars into every file) ──
+:root {
+  --navy:     #0D1F3C;   /* avatar, bottom bars, CTA btns, sidebar bg   */
+  --accent:   #2B4EAA;   /* active states, toggles ON, links, rings      */
+  --accent-s: #EEF2FF;   /* selected row tint, badge bg, card tint       */
+  --gd:       #1F2937;   /* ALL primary text                             */
+  --grey-mid: #6B7280;   /* secondary body text                          */
+  --grey:     #9CA3AF;   /* meta, timestamps, placeholders               */
+  --gl:       #F9FAFB;   /* file icon bg, hover states, input fills      */
+  --border:   #F3F4F6;   /* dividers (use sparingly, prefer whitespace)  */
+  --bg:       #FFFFFF;   /* all screen backgrounds                       */
+  --body-bg:  #ECEEF2;   /* outer canvas background                      */
+  --green:    #10B981;   /* success, completed, discount, active dot     */
+  --green-s:  #ECFDF5;   /* success badge background                     */
+  --amber:    #F59E0B;   /* processing, low-time warning, pending        */
+  --amber-s:  #FFFBEB;   /* amber badge background                       */
+  --red:      #EF4444;   /* error, expired, failed, logout               */
+  --red-s:    #FEF2F2;   /* error icon/badge background                  */
+  --serif:    'Cormorant Garamond', Georgia, serif;
+  --sans:     'DM Sans', system-ui, sans-serif;
+}
+
+!! NAVY RULE — CRITICAL: navy (#0D1F3C) ONLY in these 7 places:
+   1. Avatar / initials circles
+   2. Primary CTA pill buttons (Confirm & Pay, Done, Download, etc.)
+   3. Sticky bottom navigation bars (background)
+   4. Desktop sidebar background
+   5. Kiosk / collect screen dark headers
+   6. QR code modules (fill color)
+   7. Payment Successful success circle
+   NEVER in: body text, card backgrounds, borders, decorative elements
+
+── SPACING RULES ──
+Phone frame   : width 290–320px, border-radius 36–40px
+Screen padding: horizontal 20–22px
+Top bar       : padding 24px top, 12px bottom
+Between rows  : 14–16px gap
+Section label : margin-top 20px, margin-bottom 12–16px
+Card padding  : 14–16px
+
+!! MINIMAL RULE: whitespace over borders. Dividers (1px --border)
+   between rows only. No card wrappers around every item.
+   No nested shadows. Only the phone frame gets box-shadow.
+
+── ICON RULES ──
+ALL icons: inline SVG, stroke-based, Feather-style
+stroke-width: 1.6–2.0
+stroke-linecap: round
+stroke-linejoin: round
+fill: none
+No icon libraries. No emoji. No image files.
+
+── ALL ILLUSTRATIONS: inline SVG ──
+Printer, cloud, QR, confetti, rings — all drawn in SVG.
+
+── INTERACTIVE STATES (must always work) ──
+Toggle cards   → clicking switches .active class
+Toggle switches → clicking flips .off / .on class
+Hover states   → defined on all clickable elements
+Animations     → CSS keyframes running on page load
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION B — GSD RULES (non-negotiable)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. BUILD FIRST — write complete working code immediately.
+   No clarifying questions. No pre-explanation. Code first.
+   Brief explanation (if any) comes after.
+
+2. ONE FILE PER SECTION — all screens for a section go into
+   one self-contained HTML file. No frameworks. No build steps.
+   Only the Google Fonts link as external dependency.
+
+3. PIXEL MATCH — when a screenshot is provided, reproduce every
+   visible detail. Do not simplify or "clean up" the design.
+
+4. LOCK = FINAL — when the user says "lock", that screen is done.
+   Never revisit, never suggest changes, only reference as truth.
+
+5. MINIMAL NAVY — check every element. If navy appears outside
+   the 7 permitted uses, replace it with --gd or --grey.
+
+6. AIRY NOT CROWDED — more padding, fewer borders, lighter weights.
+   When in doubt, add whitespace.
+
+7. CONTINUE = RESUME — if cut off and user says "continue",
+   resume exactly where code stopped. No re-explanation.
+   Call present_files when file is complete.
+
+8. CONSISTENT COMPONENTS — every new screen must use the exact
+   same component patterns shown in the locked code below.
+   Copy the CSS class names, structures, and values verbatim.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION C — LOCKED SCREEN CODE (exact, pixel-perfect reference)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every file below is LOCKED. These are the ground truth for all
+design decisions. When building anything new, the CSS variables,
+class names, animation values, SVG patterns, and layout structures
+from these files are the only acceptable reference.
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_0_LANDING                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Presidency University — Campus Print</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0D1F3C;
+    --navy-mid: #1a2e4a;
+    --accent: #2B4EAA;
+    --accent-light: #EEF2FF;
+    --grey: #6B7280;
+    --border: #E5E7EB;
+    --bg: #FFFFFF;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--navy);
+    overflow-x: hidden;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 8vw;
+    overflow: hidden;
+  }
+
+  /* Background ring animation */
+  .ring-canvas {
+    position: absolute;
+    top: 50%;
+    right: -5vw;
+    transform: translateY(-50%);
+    width: min(70vw, 700px);
+    height: min(70vw, 700px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .ring-outer {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: min(4vw, 40px) solid transparent;
+    border-top-color: rgba(43, 78, 170, 0.08);
+    border-right-color: rgba(43, 78, 170, 0.08);
+    animation: spinCW 8s linear infinite;
+  }
+
+  .ring-inner {
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    border: min(3vw, 28px) solid transparent;
+    border-bottom-color: rgba(43, 78, 170, 0.11);
+    border-left-color: rgba(43, 78, 170, 0.11);
+    animation: spinCCW 6s linear infinite;
+  }
+
+  .ring-core {
+    position: absolute;
+    inset: 26%;
+    border-radius: 50%;
+    border: min(2vw, 18px) solid transparent;
+    border-top-color: rgba(43, 78, 170, 0.07);
+    border-right-color: rgba(43, 78, 170, 0.07);
+    border-bottom-color: rgba(43, 78, 170, 0.07);
+    animation: spinCW 12s linear infinite;
+  }
+
+  /* Faint watermark monogram */
+  .wm {
+    position: absolute;
+    top: 50%;
+    right: 2vw;
+    transform: translateY(-50%);
+    font-family: var(--serif);
+    font-size: min(28vw, 280px);
+    font-weight: 600;
+    color: rgba(43, 78, 170, 0.04);
+    letter-spacing: -0.05em;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    line-height: 1;
+  }
+
+  @keyframes spinCW {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes spinCCW {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+  }
+
+  /* Logo */
+  .logo-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 56px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .logo-wordmark {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+
+  /* Hero headline */
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+  }
+
+  .hero-headline {
+    font-family: var(--serif);
+    font-size: clamp(42px, 6vw, 80px);
+    font-weight: 400;
+    line-height: 1.08;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+    animation: fadeUp 0.9s 0.1s ease both;
+  }
+
+  .hero-headline .accent-italic {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 16px;
+    color: var(--grey);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 440px;
+    animation: fadeUp 1s 0.2s ease both;
+  }
+
+  .hero-cta-row {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fadeUp 1s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 9999px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--navy);
+    border: 1.5px solid var(--border);
+    padding: 13px 24px;
+    border-radius: 9999px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── SECTION LABEL ─── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-bottom: 48px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    max-width: 120px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── WORKFLOW ─── */
+  .workflow {
+    padding: 100px 8vw;
+    background: var(--bg);
+  }
+
+  .workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .workflow-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: border-color 0.25s, transform 0.2s;
+    cursor: default;
+  }
+  .workflow-card:hover {
+    border-color: rgba(43, 78, 170, 0.3);
+    transform: translateY(-2px);
+  }
+  .workflow-card.active {
+    border-color: var(--accent);
+    border-width: 1.5px;
+  }
+
+  .step-num {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+
+  .step-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--grey);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ─── CAPABILITIES ─── */
+  .capabilities {
+    padding: 80px 8vw;
+    background: #FAFAFA;
+  }
+
+  .cap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .cap-card {
+    background: var(--accent-light);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: transform 0.2s;
+  }
+  .cap-card:hover { transform: translateY(-2px); }
+
+  .cap-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 20px;
+    stroke: var(--navy);
+  }
+
+  .cap-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .cap-desc {
+    font-size: 14px;
+    color: var(--grey);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ─── RATES ─── */
+  .rates {
+    padding: 80px 8vw;
+    background: var(--bg);
+  }
+
+  .rates-card {
+    background: var(--navy);
+    border-radius: 20px;
+    overflow: hidden;
+    max-width: 800px;
+  }
+
+  .rates-header {
+    padding: 20px 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .rates-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .rates-table tr {
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    transition: background 0.15s;
+  }
+  .rates-table tr:last-child { border-bottom: none; }
+  .rates-table tr:hover { background: rgba(255,255,255,0.04); }
+
+  .rates-table td {
+    padding: 18px 32px;
+    font-size: 15px;
+  }
+
+  .rates-table td:first-child {
+    color: rgba(255,255,255,0.8);
+    font-weight: 300;
+  }
+
+  .rates-table td:last-child {
+    text-align: right;
+    color: #fff;
+    font-weight: 600;
+    font-family: var(--serif);
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  .rates-footnote {
+    padding: 16px 32px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-style: italic;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #F4F4F4;
+    padding: 60px 8vw 32px;
+  }
+
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .footer-brand {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .footer-brand-sub {
+    font-size: 12px;
+    color: var(--grey);
+    font-weight: 300;
+  }
+
+  .footer-links-col h4 {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-bottom: 16px;
+  }
+
+  .footer-links-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-links-col a {
+    font-size: 13px;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 300;
+    transition: color 0.15s;
+  }
+  .footer-links-col a:hover { color: var(--accent); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--grey);
+    font-weight: 300;
+  }
+
+  /* ─── STICKY NAV BAR ─── */
+  .sticky-bar {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: var(--navy);
+    border-radius: 9999px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 32px rgba(13, 31, 60, 0.28);
+    animation: slideUp 1s 0.5s ease both;
+  }
+
+  .bar-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.65);
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+  }
+  .bar-icon-btn:hover { color: #fff; }
+
+  .bar-icon-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .bar-cta {
+    background: #fff;
+    color: var(--navy);
+    border: none;
+    border-radius: 9999px;
+    padding: 9px 20px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .bar-cta:hover { background: #e8eeff; transform: scale(1.02); }
+
+  .bar-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ─── SCROLL REVEAL ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal:nth-child(2) { transition-delay: 0.08s; }
+  .reveal:nth-child(3) { transition-delay: 0.16s; }
+  .reveal:nth-child(4) { transition-delay: 0.24s; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .hero { padding: 100px 6vw 80px; min-height: auto; }
+    .workflow, .capabilities, .rates { padding: 60px 6vw; }
+    footer { padding: 48px 6vw 28px; }
+    .footer-top { flex-direction: column; gap: 32px; }
+    .sticky-bar { bottom: 16px; padding: 10px 16px; gap: 14px; }
+    .bar-cta { font-size: 12px; padding: 8px 16px; }
+    .rates-table td { padding: 16px 20px; }
+    .rates-header, .rates-footnote { padding: 16px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ────────────────────── HERO ────────────────────── -->
+<section class="hero">
+
+  <!-- Watermark letter -->
+  <div class="wm" aria-hidden="true">P</div>
+
+  <!-- Counter-rotating rings -->
+  <div class="ring-canvas" aria-hidden="true">
+    <div class="ring-outer"></div>
+    <div class="ring-inner"></div>
+    <div class="ring-core"></div>
+  </div>
+
+  <!-- Logo -->
+  <div class="logo-row">
+    <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Presidency University logo">
+      <path d="M6 28 C6 28 9 10 18 6 C27 10 30 28 30 28" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <path d="M10 28 C10 28 12 16 18 13 C24 16 26 28 26 28" stroke="#2B4EAA" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <line x1="4" y1="28" x2="32" y2="28" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-wordmark">Presidency University</span>
+  </div>
+
+  <!-- Headline -->
+  <div class="hero-content">
+    <h1 class="hero-headline">
+      Digital Thoughts<br/>
+      <span class="accent-italic">&amp; Physical</span> Reality
+    </h1>
+    <p class="hero-sub">
+      The official on-campus printing service for modern academics.
+    </p>
+    <div class="hero-cta-row">
+      <button class="btn-primary" onclick="document.querySelector('.workflow').scrollIntoView({behavior:'smooth'})">
+        Start Printing
+      </button>
+      <button class="btn-ghost">
+        Learn More
+      </button>
+    </div>
+  </div>
+
+</section>
+
+<!-- ────────────────────── WORKFLOW ────────────────────── -->
+<section class="workflow">
+  <div class="section-label">Workflow</div>
+
+  <div class="workflow-grid">
+    <div class="workflow-card reveal">
+      <div class="step-num">01.</div>
+      <div class="step-title">Scan to Start</div>
+      <p class="step-desc">Tap your student ID or scan the QR code at any campus kiosk to begin your session instantly.</p>
+    </div>
+    <div class="workflow-card reveal">
+      <div class="step-num">02.</div>
+      <div class="step-title">Cloud Upload</div>
+      <p class="step-desc">Upload directly from your device or pull files from your university cloud account in seconds.</p>
+    </div>
+    <div class="workflow-card reveal">
+      <div class="step-num">03.</div>
+      <div class="step-title">Instant Pay</div>
+      <p class="step-desc">Pay via UPI, scan a QR code, or use your pre-loaded academic credits — no cash required.</p>
+    </div>
+    <div class="workflow-card active reveal">
+      <div class="step-num">04.</div>
+      <div class="step-title">Collect Print</div>
+      <p class="step-desc">Retrieve your documents with a secure OTP. Every job is ready within moments of payment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────── CAPABILITIES ────────────────────── -->
+<section class="capabilities">
+  <div class="section-label">Capabilities</div>
+
+  <div class="cap-grid">
+    <div class="cap-card reveal">
+      <svg class="cap-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="12" width="32" height="22" rx="3" stroke="#0D1F3C" stroke-width="1.6"/>
+        <path d="M14 12V8h16v4" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M14 34v2h16v-2" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="34" cy="18" r="2" fill="#0D1F3C"/>
+      </svg>
+      <div class="cap-title">Campus-Wide</div>
+      <p class="cap-desc">Access 12+ printer stations across all buildings, labs, and the main library. Any kiosk, any time.</p>
+    </div>
+    <div class="cap-card reveal">
+      <svg class="cap-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 8 L36 16 L36 32 L22 40 L8 32 L8 16 Z" stroke="#0D1F3C" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M22 8 L22 24 M22 24 L8 16 M22 24 L36 16" stroke="#2B4EAA" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="cap-title">Cloud Storage</div>
+      <p class="cap-desc">Save documents to your account and reprint from any kiosk without re-uploading. Encrypted at rest.</p>
+    </div>
+    <div class="cap-card reveal">
+      <svg class="cap-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="22" r="14" stroke="#0D1F3C" stroke-width="1.6"/>
+        <path d="M22 15 L22 22 L28 25" stroke="#2B4EAA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="cap-title">Instant Output</div>
+      <p class="cap-desc">High-speed laser and colour inkjet printing. Most jobs complete within 60 seconds of payment confirmation.</p>
+    </div>
+    <div class="cap-card reveal">
+      <svg class="cap-icon" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="8" width="24" height="30" rx="3" stroke="#0D1F3C" stroke-width="1.6"/>
+        <line x1="15" y1="16" x2="29" y2="16" stroke="#2B4EAA" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="15" y1="21" x2="29" y2="21" stroke="#2B4EAA" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="15" y1="26" x2="23" y2="26" stroke="#2B4EAA" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="cap-title">Any Format</div>
+      <p class="cap-desc">PDF, DOCX, PPTX, JPEG — all formats supported. Auto-fit to page, duplex, colour or mono, your choice.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ────────────────────── RATES ────────────────────── -->
+<section class="rates">
+  <div class="section-label">Standard Rates</div>
+
+  <div class="rates-card">
+    <div class="rates-header">Academic Year 2024 / 25</div>
+    <table class="rates-table" aria-label="Printing rate card">
+      <tbody>
+        <tr>
+          <td>B&amp;W — Single Sided</td>
+          <td>₹ 2.00</td>
+        </tr>
+        <tr>
+          <td>B&amp;W — Double Sided</td>
+          <td>₹ 3.50</td>
+        </tr>
+        <tr>
+          <td>Colour — Standard</td>
+          <td>₹ 8.00</td>
+        </tr>
+        <tr>
+          <td>Colour — Glossy / Presentation</td>
+          <td>₹ 15.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="rates-footnote">* Faculty members receive 50 complimentary credits per month.</div>
+  </div>
+</section>
+
+<!-- ────────────────────── FOOTER ────────────────────── -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-brand">Presidency University</div>
+      <div class="footer-brand-sub">Information Technology Services</div>
+    </div>
+    <div style="display:flex; gap: 64px; flex-wrap: wrap;">
+      <div class="footer-links-col">
+        <h4>Service</h4>
+        <ul>
+          <li><a href="#">Kiosk Map</a></li>
+          <li><a href="#">Support Desk</a></li>
+          <li><a href="#">Status Page</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Usage Terms</a></li>
+          <li><a href="#">Refunds</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copy">
+    &copy; 2025 Presidency University · All rights reserved
+  </div>
+</footer>
+
+<!-- ────────────────────── STICKY NAV BAR ────────────────────── -->
+<nav class="sticky-bar" aria-label="Quick navigation">
+  <!-- Hamburger -->
+  <button class="bar-icon-btn" aria-label="Menu">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+  </button>
+
+  <div class="bar-divider"></div>
+
+  <!-- Main CTA -->
+  <button class="bar-cta">Scan QR to Print</button>
+
+  <div class="bar-divider"></div>
+
+  <!-- Profile -->
+  <button class="bar-icon-btn" aria-label="Profile">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 16 8 13 12 13 C16 13 20 16 20 20"/></svg>
+  </button>
+</nav>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
+
+
+/* END OF SCREEN_0_LANDING */
+══════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_1_2_UPLOAD_SETTINGS                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusPrint — Upload & Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #0D1F3C;
+    --accent:     #2B4EAA;
+    --accent-soft:#EEF2FF;
+    --grey-dark:  #374151;
+    --grey:       #6B7280;
+    --grey-light: #F3F4F6;
+    --border:     #E5E7EB;
+    --bg:         #FFFFFF;
+    --serif:      'Cormorant Garamond', Georgia, serif;
+    --sans:       'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: #F0F1F4;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 32px;
+    padding: 40px 24px 60px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 320px;
+    min-height: 640px;
+    background: var(--bg);
+    border-radius: 36px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    padding: 22px 20px 10px;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: var(--grey-dark);
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .back-btn:hover { background: var(--grey-light); }
+  .back-btn svg {
+    width: 18px; height: 18px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .screen-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--grey-dark);
+    flex: 1;
+    text-align: center;
+    margin-right: 30px;
+  }
+
+  /* ── Scrollable body ── */
+  .screen-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 18px 0;
+    scrollbar-width: none;
+  }
+  .screen-body::-webkit-scrollbar { display: none; }
+
+  /* ── Section label ── */
+  .s-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-bottom: 10px;
+    margin-top: 22px;
+  }
+  .s-label:first-child { margin-top: 0; }
+
+  /* ── File card ── */
+  .file-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--grey-light);
+  }
+
+  .file-icon-wrap {
+    width: 42px;
+    height: 48px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .file-icon-wrap svg {
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .file-type-badge {
+    font-size: 7.5px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+
+  .file-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey-dark);
+    margin-bottom: 4px;
+  }
+  .file-meta {
+    font-size: 11px;
+    color: var(--grey);
+    font-weight: 300;
+  }
+  .file-status {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-top: 3px;
+  }
+
+  /* ── Pill toggle cards ── */
+  .toggle-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .toggle-card {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    user-select: none;
+    background: var(--bg);
+  }
+  .toggle-card:hover { border-color: #CBD5E1; }
+  .toggle-card.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .tc-sub {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-bottom: 5px;
+  }
+  .toggle-card.active .tc-sub { color: var(--accent); }
+
+  .tc-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey-dark);
+  }
+
+  /* ── Range row ── */
+  .range-row {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg);
+  }
+  .range-label { font-size: 13px; color: var(--grey-dark); font-weight: 400; }
+  .range-pill {
+    background: var(--grey-light);
+    border-radius: 9999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--grey-dark);
+    border: 1px solid var(--border);
+  }
+
+  /* ── Toggle switch rows ── */
+  .settings-box {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0 16px;
+    background: var(--bg);
+  }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-name { font-size: 13px; color: var(--grey-dark); font-weight: 400; }
+  .setting-value { font-size: 13px; font-weight: 500; color: var(--grey); }
+
+  .toggle-switch {
+    width: 42px; height: 23px;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch.off { background: #D1D5DB; }
+  .toggle-switch.on  { background: var(--accent); }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    width: 17px; height: 17px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .toggle-switch.off::after { left: 3px; }
+  .toggle-switch.on::after  { left: 22px; }
+
+  /* ── Cost card ── */
+  .cost-card {
+    background: var(--grey-light);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+  }
+  .cost-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--grey);
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+  .cost-line.discount { color: #059669; }
+  .cost-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .cost-total-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey-dark);
+  }
+  .cost-total-amount {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--grey-dark);
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Sticky bottom — settings screen ── */
+  .sticky-bottom {
+    flex-shrink: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 14px 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .sticky-cost-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sticky-cost-desc { font-size: 11px; color: var(--grey); font-weight: 300; }
+  .sticky-cost-val  { font-size: 12px; color: var(--grey); font-weight: 400; }
+
+  .pay-btn {
+    margin-top: 6px;
+    background: var(--grey-dark);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 14px 20px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.15s;
+    letter-spacing: -0.01em;
+  }
+  .pay-btn:hover { background: var(--accent); }
+
+  .pay-amount-badge {
+    background: rgba(255,255,255,0.18);
+    border-radius: 9999px;
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* ── Proceed bar ── */
+  .proceed-bar {
+    flex-shrink: 0;
+    padding: 14px 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .cancel-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--grey);
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .cancel-btn:hover { border-color: #f87171; color: #f87171; }
+  .cancel-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+
+  .proceed-btn {
+    flex: 1;
+    background: var(--grey-dark);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 14px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .proceed-btn:hover { background: var(--accent); }
+
+  /* ── Upload empty state ── */
+  .upload-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 28px 32px;
+    text-align: center;
+  }
+  .upload-illustration { width: 140px; height: 120px; margin-bottom: 28px; }
+  .upload-headline {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--grey-dark);
+    margin-bottom: 10px;
+    line-height: 1.15;
+  }
+  .upload-sub {
+    font-size: 13px;
+    color: var(--grey);
+    font-weight: 300;
+    line-height: 1.65;
+    max-width: 210px;
+  }
+
+  .upload-btn-wrap {
+    flex-shrink: 0;
+    padding: 14px 18px 28px;
+  }
+  .upload-btn {
+    width: 100%;
+    background: var(--bg);
+    color: var(--grey-dark);
+    border: 1.8px solid var(--grey-dark);
+    border-radius: 9999px;
+    padding: 14px 20px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .upload-btn:hover { background: var(--grey-dark); color: #fff; }
+  .upload-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Screen label */
+  .screen-tag {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--grey);
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ SCREEN 1 — Upload ══════════ -->
+<div>
+  <div class="screen-tag">Step 1 — Upload</div>
+  <div class="phone">
+
+    <div class="top-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="screen-title">CampusPrint</span>
+    </div>
+
+    <div class="upload-center">
+      <svg class="upload-illustration" viewBox="0 0 140 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Floating doc top-right -->
+        <g transform="rotate(-12, 110, 28)">
+          <rect x="97" y="10" width="28" height="36" rx="3" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1.4"/>
+          <line x1="103" y1="20" x2="119" y2="20" stroke="#D1D5DB" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="103" y1="26" x2="119" y2="26" stroke="#D1D5DB" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="103" y1="32" x2="112" y2="32" stroke="#D1D5DB" stroke-width="1.2" stroke-linecap="round"/>
+        </g>
+        <!-- Floating doc bottom-left -->
+        <g transform="rotate(8, 20, 85)">
+          <rect x="10" y="72" width="24" height="30" rx="3" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1.3" stroke-dasharray="3 2"/>
+          <line x1="16" y1="80" x2="28" y2="80" stroke="#D1D5DB" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="16" y1="86" x2="28" y2="86" stroke="#D1D5DB" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+        <!-- Printer body -->
+        <rect x="24" y="46" width="92" height="42" rx="10" fill="#EEF2FF" stroke="#2B4EAA" stroke-width="1.8"/>
+        <!-- Paper tray top -->
+        <rect x="38" y="36" width="64" height="16" rx="5" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1.5"/>
+        <!-- Paper out bottom -->
+        <rect x="44" y="82" width="52" height="13" rx="3" fill="#fff" stroke="#2B4EAA" stroke-width="1.5"/>
+        <!-- Status dot -->
+        <circle cx="96" cy="61" r="3" fill="#2B4EAA" opacity="0.7"/>
+        <circle cx="106" cy="61" r="3" fill="#E5E7EB"/>
+        <!-- Slot -->
+        <line x1="38" y1="70" x2="102" y2="70" stroke="#2B4EAA" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+      </svg>
+
+      <h1 class="upload-headline">Ready to print?</h1>
+      <p class="upload-sub">Upload your documents to get started with high-quality campus printing.</p>
+    </div>
+
+    <div class="upload-btn-wrap">
+      <button class="upload-btn">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Document
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════ SCREEN 2 — Print Settings (card toggle) ══════════ -->
+<div>
+  <div class="screen-tag">Step 2 — Print Settings</div>
+  <div class="phone">
+
+    <div class="top-bar">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="screen-title">Print Settings</span>
+    </div>
+
+    <div class="screen-body">
+
+      <div class="s-label">Selected File</div>
+      <div class="file-card">
+        <div class="file-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="file-type-badge">PDF</span>
+        </div>
+        <div>
+          <div class="file-name">thesis_final_v2.pdf</div>
+          <div class="file-meta">12 Pages · 2.4 MB</div>
+        </div>
+      </div>
+
+      <div class="s-label">Color Mode</div>
+      <div class="toggle-group" id="colorGroup">
+        <div class="toggle-card active" onclick="selectToggle(this,'colorGroup')">
+          <div class="tc-sub">Economy</div>
+          <div class="tc-label">Black &amp; White</div>
+        </div>
+        <div class="toggle-card" onclick="selectToggle(this,'colorGroup')">
+          <div class="tc-sub">Standard</div>
+          <div class="tc-label">Full Color</div>
+        </div>
+      </div>
+
+      <div class="s-label">Layout</div>
+      <div class="toggle-group" id="layoutGroup">
+        <div class="toggle-card" onclick="selectToggle(this,'layoutGroup')">
+          <div class="tc-sub">Simplex</div>
+          <div class="tc-label">Single Sided</div>
+        </div>
+        <div class="toggle-card active" onclick="selectToggle(this,'layoutGroup')">
+          <div class="tc-sub">Duplex</div>
+          <div class="tc-label">Double Sided</div>
+        </div>
+      </div>
+
+      <div class="s-label">Page Range</div>
+      <div class="range-row">
+        <span class="range-label">Custom Range</span>
+        <span class="range-pill">1 – 12</span>
+      </div>
+
+      <div style="height:14px;"></div>
+    </div>
+
+    <div class="sticky-bottom">
+      <div class="sticky-cost-line">
+        <span class="sticky-cost-desc">6 Sheets (Double Sided)</span>
+        <span class="sticky-cost-val">₹ 21.00</span>
+      </div>
+      <div class="sticky-cost-line">
+        <span class="sticky-cost-desc">Service Fee</span>
+        <span class="sticky-cost-val">₹ 2.00</span>
+      </div>
+      <button class="pay-btn">
+        Confirm &amp; Pay
+        <span class="pay-amount-badge">₹ 23.00</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════ SCREEN 3 — Print Setup (toggle rows) ══════════ -->
+<div>
+  <div class="screen-tag">Step 2 — Print Setup (Alt)</div>
+  <div class="phone">
+
+    <div class="top-bar" style="gap:4px;">
+      <button class="back-btn" aria-label="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span style="font-size:12px;color:var(--grey);font-weight:400;margin-right:2px;">Back</span>
+      <span class="screen-title" style="margin-right:40px;">Print Setup</span>
+    </div>
+
+    <div class="screen-body">
+
+      <div class="s-label">Document Preview</div>
+      <div class="file-card">
+        <div class="file-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="file-type-badge">PDF</span>
+        </div>
+        <div>
+          <div class="file-name">Thesis_Draft_V4.pdf</div>
+          <div class="file-meta">12 Pages · 2.4 MB</div>
+          <div class="file-status">Ready to process</div>
+        </div>
+      </div>
+
+      <div class="s-label">Settings</div>
+      <div class="settings-box">
+        <div class="setting-row">
+          <span class="setting-name">Color Mode</span>
+          <button class="toggle-switch off" onclick="this.classList.toggle('off');this.classList.toggle('on')" aria-label="Toggle color"></button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-name">Double Sided</span>
+          <button class="toggle-switch on" onclick="this.classList.toggle('off');this.classList.toggle('on')" aria-label="Toggle duplex"></button>
+        </div>
+        <div class="setting-row">
+          <span class="setting-name">Page Range</span>
+          <span class="setting-value" style="display:flex;align-items:center;gap:5px;">
+            <span style="color:var(--grey-dark);font-weight:500;">1</span>
+            <span style="font-size:11px;color:var(--grey);">to</span>
+            <span style="color:var(--grey-dark);font-weight:500;">12</span>
+          </span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-name">Copies</span>
+          <span class="setting-value" style="color:var(--grey-dark);font-weight:500;">1</span>
+        </div>
+      </div>
+
+      <div class="cost-card">
+        <div class="cost-line">
+          <span>B&amp;W Double Sided (12 pages)</span>
+          <span>₹ 21.00</span>
+        </div>
+        <div class="cost-line discount">
+          <span>Student Discount (ITS)</span>
+          <span>− ₹ 2.10</span>
+        </div>
+        <div class="cost-total">
+          <span class="cost-total-label">Total Payable</span>
+          <span class="cost-total-amount">₹ 18.90</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="proceed-bar">
+      <button class="cancel-btn" aria-label="Cancel">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <button class="proceed-btn">Proceed to Payment</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function selectToggle(el, groupId) {
+    document.getElementById(groupId)
+      .querySelectorAll('.toggle-card')
+      .forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
+</body>
+</html>
+
+
+/* END OF SCREEN_1_2_UPLOAD_SETTINGS */
+══════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_3_RECEIPT_PROFILE_KIOSK                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusPrint — Receipt · Settings · Profile · Kiosk · Collect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:    #0D1F3C;
+  --accent:  #2B4EAA;
+  --accent-s:#EEF2FF;
+  --gd:      #374151;
+  --grey:    #6B7280;
+  --gl:      #F3F4F6;
+  --border:  #E5E7EB;
+  --bg:      #FFFFFF;
+  --green:   #10B981;
+  --serif:   'Cormorant Garamond',Georgia,serif;
+  --sans:    'DM Sans',system-ui,sans-serif;
+}
+
+body{
+  font-family:var(--sans);
+  background:#ECEEF2;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:28px;
+  padding:40px 20px 60px;
+  flex-wrap:wrap;
+}
+
+/* ── phone shell ── */
+.phone{
+  width:300px;
+  background:var(--bg);
+  border-radius:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.05);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* screen label */
+.stag{
+  text-align:center;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--grey);
+  margin-bottom:14px;
+}
+
+/* ── top bar ── */
+.top-bar{
+  display:flex;
+  align-items:center;
+  padding:22px 18px 10px;
+  flex-shrink:0;
+}
+.back-btn{
+  background:none;border:none;cursor:pointer;
+  padding:6px;color:var(--gd);
+  display:flex;align-items:center;
+  border-radius:8px;transition:background .15s;
+}
+.back-btn:hover{background:var(--gl);}
+.back-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.screen-title{
+  font-family:var(--serif);font-size:22px;font-weight:600;font-style:italic;
+  color:var(--gd);flex:1;text-align:center;margin-right:29px;
+}
+
+/* ── scrollable body ── */
+.sbody{
+  flex:1;overflow-y:auto;padding:12px 18px 0;
+  scrollbar-width:none;
+}
+.sbody::-webkit-scrollbar{display:none;}
+
+/* ── section label ── */
+.sl{
+  font-size:9px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--grey);
+  margin-bottom:10px;margin-top:22px;
+}
+.sl:first-child{margin-top:0;}
+
+/* ── divider ── */
+.divider{height:1px;background:var(--border);margin:14px 0;}
+
+/* ── sticky bottom ── */
+.sticky{
+  flex-shrink:0;padding:14px 18px 24px;
+  background:var(--bg);border-top:1px solid var(--border);
+}
+.dark-btn{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:9999px;padding:14px;
+  font-family:var(--sans);font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;letter-spacing:-.01em;
+}
+.dark-btn:hover{background:var(--accent);}
+.dark-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ══════════════════════════════════════
+   SCREEN 1 — ORDER RECEIPT
+══════════════════════════════════════ */
+.receipt-modal-bg{
+  background:var(--gl);
+  flex:1;display:flex;flex-direction:column;
+}
+.receipt-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 18px 14px;
+}
+.receipt-title{font-family:var(--serif);font-size:22px;font-style:italic;font-weight:600;color:var(--gd);}
+.close-btn{
+  background:none;border:none;cursor:pointer;
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--grey);transition:background .15s;
+}
+.close-btn:hover{background:var(--border);}
+.close-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;}
+
+.receipt-inner{
+  flex:1;overflow-y:auto;padding:0 18px 8px;
+  scrollbar-width:none;
+}
+.receipt-inner::-webkit-scrollbar{display:none;}
+
+.tx-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;
+}
+.tx-id{font-size:10px;color:var(--grey);font-weight:400;letter-spacing:.05em;margin-bottom:6px;}
+.tx-file{font-size:14px;font-weight:600;color:var(--gd);margin-bottom:4px;}
+.tx-date{font-size:11px;color:var(--grey);font-weight:300;}
+
+.cost-table{background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.cost-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:11px 14px;border-bottom:1px solid var(--border);
+}
+.cost-row:last-child{border-bottom:none;}
+.cost-row-left{}
+.cost-row-name{font-size:13px;color:var(--gd);font-weight:400;}
+.cost-row-sub{font-size:10px;color:var(--grey);font-weight:300;margin-top:2px;}
+.cost-row-amt{font-size:13px;font-weight:600;color:var(--gd);white-space:nowrap;margin-left:12px;}
+
+.total-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px;background:var(--bg);
+  border:1px solid var(--border);border-radius:14px;margin-bottom:12px;
+}
+.total-label{font-size:14px;font-weight:600;color:var(--gd);}
+.total-amt{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--gd);}
+
+.payment-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--gl);border:1px solid var(--border);
+  border-radius:9999px;padding:8px 14px;width:fit-content;
+  font-size:12px;color:var(--grey);font-weight:400;margin-bottom:16px;
+}
+.payment-chip svg{width:16px;height:16px;stroke:var(--grey);fill:none;stroke-width:1.6;}
+
+/* ══════════════════════════════════════
+   SCREEN 2 — SETTINGS
+══════════════════════════════════════ */
+.setting-section{
+  border:1px solid var(--border);border-radius:14px;overflow:hidden;
+  background:var(--bg);margin-bottom:4px;
+}
+.setting-row{
+  display:flex;align-items:center;
+  padding:13px 14px;border-bottom:1px solid var(--border);
+  gap:12px;
+}
+.setting-row:last-child{border-bottom:none;}
+.setting-info{flex:1;}
+.setting-name{font-size:13px;color:var(--gd);font-weight:500;}
+.setting-desc{font-size:11px;color:var(--grey);font-weight:300;margin-top:2px;}
+
+.tog{
+  width:42px;height:23px;border-radius:9999px;border:none;
+  cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;
+}
+.tog.off{background:#D1D5DB;}
+.tog.on{background:var(--accent);}
+.tog::after{
+  content:'';position:absolute;top:3px;
+  width:17px;height:17px;border-radius:50%;background:#fff;
+  transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.18);
+}
+.tog.off::after{left:3px;}
+.tog.on::after{left:22px;}
+
+.setting-link{font-size:13px;color:var(--accent);font-weight:500;}
+.setting-chevron{color:var(--grey);}
+.setting-chevron svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.card-chip{
+  display:inline-flex;align-items:center;
+  background:var(--gl);border:1px solid var(--border);
+  border-radius:6px;padding:3px 7px;
+  font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--gd);
+}
+
+.add-method{
+  text-align:center;padding:12px;font-size:13px;
+  color:var(--accent);font-weight:500;cursor:pointer;
+}
+.add-method:hover{text-decoration:underline;}
+
+/* ══════════════════════════════════════
+   SCREEN 3 — MY PROFILE
+══════════════════════════════════════ */
+.avatar{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--navy);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;letter-spacing:.04em;flex-shrink:0;
+}
+.profile-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.profile-name{font-size:16px;font-weight:700;color:var(--gd);}
+.profile-sub{font-size:12px;color:var(--grey);font-weight:300;margin-top:2px;}
+
+.history-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;
+}
+.history-badge{
+  background:var(--accent-s);color:var(--accent);
+  font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 9px;border-radius:9999px;
+}
+
+.history-item{margin-bottom:14px;}
+.history-meta{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;
+}
+.history-date{font-size:10px;color:var(--grey);font-weight:400;letter-spacing:.02em;}
+.history-amt{font-size:13px;font-weight:600;color:var(--gd);}
+
+.history-file{
+  display:flex;align-items:center;gap:10px;
+  background:var(--gl);border:1px solid var(--border);
+  border-radius:12px;padding:10px 12px;margin-bottom:8px;
+}
+.history-file svg{width:18px;height:18px;stroke:var(--grey);fill:none;stroke-width:1.6;flex-shrink:0;}
+.history-file-name{font-size:13px;font-weight:500;color:var(--gd);}
+.history-file-spec{font-size:11px;color:var(--grey);font-weight:300;margin-top:2px;}
+
+.reorder-btn{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:9999px;padding:11px;
+  font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .15s;
+}
+.reorder-btn:hover{background:var(--accent);}
+.reorder-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ══════════════════════════════════════
+   SCREEN 4 — SENDING TO KIOSK
+══════════════════════════════════════ */
+.kiosk-screen{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:28px 24px 20px;text-align:center;
+  background:var(--bg);
+}
+.confirmed-badge{
+  display:inline-flex;align-items:center;
+  background:var(--accent-s);color:var(--accent);
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 14px;border-radius:9999px;margin-bottom:20px;
+}
+.kiosk-headline{
+  font-family:var(--serif);font-size:30px;font-weight:600;
+  color:var(--gd);line-height:1.15;margin-bottom:10px;
+}
+.kiosk-headline .knum{color:var(--accent);}
+.kiosk-sub{font-size:13px;color:var(--grey);font-weight:300;line-height:1.6;max-width:220px;margin-bottom:28px;}
+
+/* Circular progress */
+.ring-wrap{
+  position:relative;width:110px;height:110px;margin-bottom:28px;
+}
+.ring-wrap svg{width:110px;height:110px;transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:#E5E7EB;stroke-width:6;}
+.ring-prog{
+  fill:none;stroke:var(--accent);stroke-width:6;
+  stroke-linecap:round;
+  stroke-dasharray:298;stroke-dashoffset:75;
+  animation:ringAnim 2s ease-in-out infinite alternate;
+}
+@keyframes ringAnim{
+  from{stroke-dashoffset:75;}
+  to{stroke-dashoffset:20;}
+}
+.ring-icon{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:40px;height:40px;
+  background:var(--gl);border:1px solid var(--border);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+}
+.ring-icon svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+.queue-card{
+  width:100%;background:var(--gl);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;margin-bottom:14px;
+}
+.queue-row{display:flex;gap:32px;margin-bottom:10px;}
+.queue-col{}
+.queue-col-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);margin-bottom:4px;}
+.queue-col-val{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--gd);}
+.queue-col-val span{font-size:14px;font-weight:400;color:var(--grey);}
+.queue-live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);font-weight:500;}
+.green-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.kiosk-file{font-size:11px;color:var(--grey);font-weight:300;margin-top:4px;}
+
+/* ══════════════════════════════════════
+   SCREEN 5 — READY TO COLLECT
+══════════════════════════════════════ */
+.collect-phone{
+  width:300px;
+  background:var(--bg);
+  border-radius:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.05);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.collect-header{
+  background:var(--navy);
+  padding:20px 18px 14px;
+  display:flex;align-items:flex-end;justify-content:center;
+  min-height:56px;
+}
+.collect-header-chevron{
+  color:rgba(255,255,255,.5);display:flex;align-items:center;
+}
+.collect-header-chevron svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.collect-body{flex:1;overflow-y:auto;padding:14px 14px 0;scrollbar-width:none;}
+.collect-body::-webkit-scrollbar{display:none;}
+
+.doc-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;padding:14px 16px;margin-bottom:12px;
+}
+.doc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.doc-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);margin-bottom:4px;}
+.doc-filename{font-size:16px;font-weight:700;color:var(--gd);line-height:1.2;}
+.doc-price{font-size:16px;font-weight:700;color:var(--accent);}
+.doc-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.doc-meta-col{}
+.doc-meta-label{font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--grey);margin-bottom:3px;}
+.doc-meta-val{font-size:12px;font-weight:500;color:var(--gd);line-height:1.4;}
+
+.qr-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:12px;
+  display:flex;flex-direction:column;align-items:center;
+}
+/* SVG QR pattern */
+.qr-grid{width:160px;height:160px;margin-bottom:14px;}
+.qr-label{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:4px;}
+.qr-sub{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--grey);font-weight:300;}
+.qr-sub svg{width:13px;height:13px;stroke:var(--grey);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+.id-balance{
+  display:flex;align-items:center;gap:12px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px;margin-bottom:12px;
+}
+.id-badge{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;letter-spacing:.05em;flex-shrink:0;
+}
+.id-info{flex:1;}
+.id-bal-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);margin-bottom:2px;}
+.id-bal-amt{font-size:18px;font-weight:700;color:var(--gd);}
+.id-active{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);font-weight:600;}
+
+.collect-sticky{flex-shrink:0;padding:12px 14px 22px;background:var(--bg);border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- ══════════ SCREEN 1 — ORDER RECEIPT ══════════ -->
+<div>
+<div class="stag">Order Receipt</div>
+<div class="phone" style="min-height:640px;">
+  <div class="receipt-modal-bg">
+
+    <div class="receipt-header">
+      <span class="receipt-title">Order Receipt</span>
+      <button class="close-btn" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="receipt-inner">
+
+      <div class="tx-card">
+        <div class="tx-id">TRANSACTION #CP-99281</div>
+        <div class="tx-file">thesis_final_v2.pdf</div>
+        <div class="tx-date">Oct 24, 2023 · 2:15 PM</div>
+      </div>
+
+      <div class="sl">Cost Breakdown</div>
+      <div class="cost-table">
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Base Printing</div>
+            <div class="cost-row-sub">12 pages × ₹1.00 (B&amp;W)</div>
+          </div>
+          <div class="cost-row-amt">₹ 12.00</div>
+        </div>
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Color Surcharge</div>
+            <div class="cost-row-sub">Not applicable</div>
+          </div>
+          <div class="cost-row-amt" style="color:var(--grey);">₹ 0.00</div>
+        </div>
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Premium Paper Fee</div>
+            <div class="cost-row-sub">60 GSM Bright White</div>
+          </div>
+          <div class="cost-row-amt">₹ 6.00</div>
+        </div>
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name" style="color:#10B981;">Double Sided Discount</div>
+            <div class="cost-row-sub">Paper saving incentive</div>
+          </div>
+          <div class="cost-row-amt" style="color:#10B981;">− ₹ 2.00</div>
+        </div>
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Service Fee</div>
+            <div class="cost-row-sub">Platform &amp; Maintenance</div>
+          </div>
+          <div class="cost-row-amt">₹ 7.00</div>
+        </div>
+      </div>
+
+      <div class="total-row">
+        <span class="total-label">Total Amount</span>
+        <span class="total-amt">₹ 23.00</span>
+      </div>
+
+      <div class="payment-chip">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Paid via Campus Wallet (•••• 4921)
+      </div>
+
+      <div class="sl">Printer Information</div>
+      <div class="cost-table" style="margin-bottom:16px;">
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Location</div>
+            <div class="cost-row-sub">Central Library · Ground Floor</div>
+          </div>
+        </div>
+        <div class="cost-row">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Kiosk ID</div>
+          </div>
+          <div class="cost-row-amt" style="font-size:12px;">#04</div>
+        </div>
+        <div class="cost-row" style="border-bottom:none;">
+          <div class="cost-row-left">
+            <div class="cost-row-name">Status</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:#10B981;font-weight:600;margin-left:12px;">
+            <div class="green-dot"></div> Completed
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sticky">
+      <button class="dark-btn">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF Invoice
+      </button>
+    </div>
+
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 2 — SETTINGS ══════════ -->
+<div>
+<div class="stag">Settings</div>
+<div class="phone" style="min-height:640px;">
+
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="screen-title">Settings</span>
+  </div>
+
+  <div class="sbody">
+
+    <div class="sl">Notifications</div>
+    <div class="setting-section">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Order Ready Alerts</div>
+          <div class="setting-desc">Get notified when your print is ready</div>
+        </div>
+        <button class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')" aria-label="Toggle"></button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Low Balance Reminders</div>
+          <div class="setting-desc">Alert when credits drop below ₹50</div>
+        </div>
+        <button class="tog off" onclick="this.classList.toggle('on');this.classList.toggle('off')" aria-label="Toggle"></button>
+      </div>
+    </div>
+
+    <div class="sl">Pickup Preference</div>
+    <div class="setting-section">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Default Campus Location</div>
+          <div class="setting-desc">Preferred library or student hub</div>
+        </div>
+        <span class="setting-link" style="font-size:12px;white-space:nowrap;">Central Library ›</span>
+      </div>
+    </div>
+
+    <div class="sl">Payment Methods</div>
+    <div class="setting-section">
+      <div class="setting-row">
+        <span class="card-chip">VISA</span>
+        <div class="setting-info" style="margin-left:8px;">
+          <div class="setting-name">•••• 4242</div>
+        </div>
+        <div class="setting-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="setting-row">
+        <span class="card-chip" style="font-size:8px;">MC</span>
+        <div class="setting-info" style="margin-left:8px;">
+          <div class="setting-name">•••• 8810</div>
+        </div>
+        <div class="setting-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="add-method">+ Add New Payment Method</div>
+    </div>
+
+    <div class="sl">Account Security</div>
+    <div class="setting-section" style="margin-bottom:16px;">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Change Password</div>
+        </div>
+        <div class="setting-chevron"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Two-Factor Auth</div>
+          <div class="setting-desc">Adds an extra layer of security</div>
+        </div>
+        <button class="tog off" onclick="this.classList.toggle('on');this.classList.toggle('off')" aria-label="Toggle"></button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sticky">
+    <button class="dark-btn">Save Changes</button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 3 — MY PROFILE ══════════ -->
+<div>
+<div class="stag">My Profile</div>
+<div class="phone" style="min-height:640px;">
+
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="screen-title">My Profile</span>
+  </div>
+
+  <div class="sbody">
+
+    <div class="profile-header">
+      <div class="avatar">AS</div>
+      <div>
+        <div class="profile-name">Arjun Sharma</div>
+        <div class="profile-sub">Computer Science, Year 3</div>
+      </div>
+    </div>
+
+    <div class="history-header">
+      <div class="sl" style="margin:0;">Print History</div>
+      <span class="history-badge">Last 30 Days</span>
+    </div>
+
+    <!-- Item 1 -->
+    <div class="history-item">
+      <div class="history-meta">
+        <span class="history-date">OCT 24, 2023 · 11:30 AM</span>
+        <span class="history-amt">₹ 23.00</span>
+      </div>
+      <div class="history-file">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div>
+          <div class="history-file-name">thesis_final_v2.pdf</div>
+          <div class="history-file-spec">12 Pages · Double Sided · B&amp;W</div>
+        </div>
+      </div>
+      <button class="reorder-btn">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Quick Reorder
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Item 2 -->
+    <div class="history-item">
+      <div class="history-meta">
+        <span class="history-date">OCT 21, 2023 · 09:15 AM</span>
+        <span class="history-amt">₹ 85.00</span>
+      </div>
+      <div class="history-file">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div>
+          <div class="history-file-name">lab_report_charts.pdf</div>
+          <div class="history-file-spec">5 Pages · Single Sided · Color</div>
+        </div>
+      </div>
+      <button class="reorder-btn">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Quick Reorder
+      </button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Item 3 -->
+    <div class="history-item" style="margin-bottom:16px;">
+      <div class="history-meta">
+        <span class="history-date">OCT 18, 2023 · 02:45 PM</span>
+        <span class="history-amt">₹ 14.00</span>
+      </div>
+      <div class="history-file">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <div>
+          <div class="history-file-name">id_card_scan.jpg</div>
+          <div class="history-file-spec">1 Page · Single Sided · B&amp;W</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 4 — SENDING TO KIOSK ══════════ -->
+<div>
+<div class="stag">Sending to Kiosk</div>
+<div class="phone" style="min-height:580px;">
+
+  <div class="kiosk-screen">
+    <div class="confirmed-badge">Payment Confirmed</div>
+    <h1 class="kiosk-headline">Sending to<br/>Kiosk <span class="knum">#04</span></h1>
+    <p class="kiosk-sub">Please stay on this screen while we securely transmit your files.</p>
+
+    <div class="ring-wrap">
+      <svg viewBox="0 0 110 110">
+        <circle class="ring-bg" cx="55" cy="55" r="47"/>
+        <circle class="ring-prog" cx="55" cy="55" r="47"/>
+      </svg>
+      <div class="ring-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8v4h8V3z"/><circle cx="17" cy="14" r="1" fill="var(--accent)"/></svg>
+      </div>
+    </div>
+
+    <div class="queue-card">
+      <div class="queue-row">
+        <div class="queue-col">
+          <div class="queue-col-label">Queue Position</div>
+          <div class="queue-col-val">02 <span>/ 05</span></div>
+        </div>
+        <div class="queue-col">
+          <div class="queue-col-label">Est. Wait</div>
+          <div class="queue-col-val">45<span>s</span></div>
+        </div>
+      </div>
+      <div class="queue-live">
+        <div class="green-dot"></div>
+        Real-time queue update active
+      </div>
+    </div>
+
+    <div class="kiosk-file">File: final_thesis_rev02.pdf (4.2 MB)</div>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 5 — READY TO COLLECT ══════════ -->
+<div>
+<div class="stag">Ready to Collect</div>
+<div class="collect-phone" style="min-height:640px;">
+
+  <div class="collect-header">
+    <div class="collect-header-chevron">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+
+  <div class="collect-body">
+
+    <div class="doc-card">
+      <div class="doc-top">
+        <div>
+          <div class="doc-label">Document</div>
+          <div class="doc-filename">Thesis_Final_<br/>Draft.pdf</div>
+        </div>
+        <div class="doc-price">₹ 21.00</div>
+      </div>
+      <div class="doc-meta-grid">
+        <div class="doc-meta-col">
+          <div class="doc-meta-label">Settings</div>
+          <div class="doc-meta-val">12 Pgs · B&amp;W · 2-Sided</div>
+        </div>
+        <div class="doc-meta-col">
+          <div class="doc-meta-label">Kiosk</div>
+          <div class="doc-meta-val">Central Library · #04</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="qr-card">
+      <!-- QR pattern built from SVG rects -->
+      <svg class="qr-grid" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="160" fill="white"/>
+        <!-- Top-left finder -->
+        <rect x="10" y="10" width="42" height="42" rx="4" fill="#1a2e4a"/>
+        <rect x="17" y="17" width="28" height="28" rx="2" fill="white"/>
+        <rect x="22" y="22" width="18" height="18" rx="1" fill="#1a2e4a"/>
+        <!-- Top-right finder -->
+        <rect x="108" y="10" width="42" height="42" rx="4" fill="#1a2e4a"/>
+        <rect x="115" y="17" width="28" height="28" rx="2" fill="white"/>
+        <rect x="120" y="22" width="18" height="18" rx="1" fill="#1a2e4a"/>
+        <!-- Bottom-left finder -->
+        <rect x="10" y="108" width="42" height="42" rx="4" fill="#1a2e4a"/>
+        <rect x="17" y="115" width="28" height="28" rx="2" fill="white"/>
+        <rect x="22" y="120" width="18" height="18" rx="1" fill="#1a2e4a"/>
+        <!-- Data modules - scattered pattern -->
+        <rect x="62" y="10" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="10" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="10" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="10" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="22" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="22" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="34" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="34" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="46" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="46" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="46" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="10" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="22" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="46" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="110" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="134" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="146" y="62" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="10" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="34" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="110" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="122" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="146" y="74" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="22" y="86" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="46" y="86" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="86" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="86" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="134" y="86" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="98" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="98" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="110" y="98" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="122" y="98" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="146" y="98" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="110" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="110" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="110" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="134" y="110" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="146" y="110" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="122" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="122" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="110" y="122" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="122" y="122" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="74" y="134" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="98" y="134" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="134" y="134" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="62" y="146" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="86" y="146" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="110" y="146" width="7" height="7" rx="1" fill="#1a2e4a"/>
+        <rect x="146" y="146" width="7" height="7" rx="1" fill="#1a2e4a"/>
+      </svg>
+      <div class="qr-label">Ready to collect</div>
+      <div class="qr-sub">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Est. printing: ~45s
+      </div>
+    </div>
+
+    <div class="id-balance">
+      <div class="id-badge">ID</div>
+      <div class="id-info">
+        <div class="id-bal-label">Current Balance</div>
+        <div class="id-bal-amt">₹ 442.50</div>
+      </div>
+      <div class="id-active">
+        <div class="green-dot"></div>
+        Active
+      </div>
+    </div>
+
+  </div>
+
+  <div class="collect-sticky">
+    <button class="dark-btn">Back to Dashboard</button>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
+
+
+/* END OF SCREEN_3_RECEIPT_PROFILE_KIOSK */
+══════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_4_PAYMENT                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusPrint — Payment Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:    #0D1F3C;
+  --accent:  #2B4EAA;
+  --accent-s:#EEF2FF;
+  --gd:      #374151;
+  --grey:    #6B7280;
+  --gl:      #F3F4F6;
+  --border:  #E5E7EB;
+  --bg:      #FFFFFF;
+  --green:   #10B981;
+  --red:     #EF4444;
+  --red-s:   #FEF2F2;
+  --serif:   'Cormorant Garamond',Georgia,serif;
+  --sans:    'DM Sans',system-ui,sans-serif;
+}
+
+body{
+  font-family:var(--sans);
+  background:#ECEEF2;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:28px;
+  padding:40px 20px 60px;
+  flex-wrap:wrap;
+}
+
+/* ── phone shell ── */
+.phone{
+  width:300px;
+  min-height:620px;
+  background:var(--bg);
+  border-radius:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.05);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+.stag{
+  text-align:center;
+  font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--grey);margin-bottom:14px;
+}
+
+/* ── top bar ── */
+.top-bar{
+  display:flex;align-items:center;
+  padding:22px 18px 12px;flex-shrink:0;
+}
+.back-btn{
+  background:none;border:none;cursor:pointer;padding:6px;
+  color:var(--gd);display:flex;align-items:center;
+  border-radius:8px;transition:background .15s;flex-shrink:0;
+}
+.back-btn:hover{background:var(--gl);}
+.back-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.screen-title-serif{
+  font-family:var(--serif);font-size:21px;font-weight:600;font-style:italic;
+  color:var(--gd);flex:1;text-align:center;margin-right:29px;
+}
+.screen-title-sans{
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  color:var(--gd);flex:1;text-align:center;margin-right:29px;
+}
+
+/* ── scrollable body ── */
+.sbody{flex:1;overflow-y:auto;padding:10px 18px 0;scrollbar-width:none;}
+.sbody::-webkit-scrollbar{display:none;}
+
+/* ── section label ── */
+.sl{
+  font-size:9px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--grey);
+  margin-bottom:10px;margin-top:20px;
+}
+
+/* ── summary card ── */
+.summary-card{
+  background:var(--gl);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;margin-bottom:4px;
+}
+.summary-label{
+  font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--grey);margin-bottom:6px;
+}
+.summary-amount{
+  font-family:var(--serif);font-size:36px;font-weight:600;
+  color:var(--gd);line-height:1;margin-bottom:12px;
+}
+.summary-divider{height:1px;background:var(--border);margin-bottom:10px;}
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:6px;
+}
+.summary-row:last-child{margin-bottom:0;}
+.summary-row-label{font-size:12px;color:var(--grey);font-weight:300;}
+.summary-row-val{font-size:12px;color:var(--gd);font-weight:500;}
+.txn-id{
+  font-size:10px;font-weight:600;letter-spacing:.05em;
+  color:var(--grey);text-align:right;
+}
+.txn-id span{display:block;color:var(--gd);font-size:11px;font-weight:600;margin-top:2px;}
+
+/* ── UPI button ── */
+.upi-btn{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:12px;padding:15px;
+  font-family:var(--sans);font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background .15s;letter-spacing:-.01em;
+}
+.upi-btn:hover{background:var(--accent);}
+.upi-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── QR zone dashed ── */
+.qr-zone-dashed{
+  border:1.5px dashed #CBD5E1;border-radius:14px;
+  padding:20px;display:flex;flex-direction:column;align-items:center;
+  margin-bottom:4px;
+}
+.qr-placeholder{
+  width:110px;height:110px;margin-bottom:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.qr-caption{font-size:11px;color:var(--grey);font-weight:300;text-align:center;line-height:1.55;}
+
+/* ── Full QR card ── */
+.qr-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:16px;
+  display:flex;flex-direction:column;align-items:center;
+}
+.qr-full{width:170px;height:170px;margin-bottom:0;position:relative;}
+.qr-center-badge{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:32px;height:32px;background:#fff;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);
+}
+.qr-center-badge svg{width:16px;height:16px;stroke:var(--navy);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+.scan-headline{
+  font-family:var(--serif);font-size:22px;font-weight:600;
+  color:var(--gd);margin-bottom:6px;margin-top:14px;text-align:center;
+}
+.scan-sub{font-size:12px;color:var(--grey);font-weight:300;text-align:center;line-height:1.6;max-width:200px;}
+.bhim-label{
+  font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--grey);margin-top:10px;
+}
+
+/* ── Waiting bar ── */
+.waiting-bar{
+  flex-shrink:0;
+  border-top:1px solid var(--border);
+  padding:12px 18px 20px;
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg);
+}
+.waiting-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;
+  animation:wdot 1.2s ease-in-out infinite;
+}
+@keyframes wdot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.75);}}
+.waiting-text{
+  font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--grey);
+  overflow:hidden;white-space:nowrap;
+  animation:marquee 6s linear infinite;
+}
+@keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-30%);}}
+
+/* ── Bottom bar (cancel order) ── */
+.bottom-bar{
+  flex-shrink:0;
+  background:var(--gl);border-top:1px solid var(--border);
+  padding:14px 18px 22px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cancel-text-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  color:var(--gd);padding:8px 0;
+  transition:color .15s;
+}
+.cancel-text-btn:hover{color:var(--red);}
+.person-btn{
+  background:none;border:none;cursor:pointer;
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--grey);transition:background .15s;
+}
+.person-btn:hover{background:var(--border);}
+.person-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── Processing screen ── */
+.centered-screen{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;padding:20px 22px 0;
+}
+.brand-top{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  margin-bottom:28px;
+}
+.brand-icon svg{width:28px;height:28px;stroke:var(--gd);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.brand-name{
+  font-size:10px;font-weight:700;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gd);
+}
+
+/* concentric rings */
+.rings-wrap{
+  position:relative;width:130px;height:130px;margin-bottom:24px;
+}
+.ring-outer{
+  position:absolute;inset:0;border-radius:50%;
+  border:1.5px solid #E5E7EB;
+}
+.ring-mid{
+  position:absolute;inset:14px;border-radius:50%;
+  border:1.5px solid #E5E7EB;
+  animation:ringSpin 3s linear infinite;
+}
+@keyframes ringSpin{to{transform:rotate(360deg);}}
+.ring-mid::after{
+  content:'';position:absolute;top:-3px;left:50%;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);transform:translateX(-50%);
+}
+.ring-inner{
+  position:absolute;inset:28px;border-radius:50%;
+  border:1.5px solid #E5E7EB;
+  animation:ringSpin 5s linear infinite reverse;
+}
+.ring-center{
+  position:absolute;inset:40px;border-radius:50%;
+  background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+}
+.ring-center svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+.processing-headline{
+  font-family:var(--serif);font-size:26px;font-weight:600;font-style:italic;
+  color:var(--gd);margin-bottom:8px;text-align:center;
+}
+.processing-sub{
+  font-size:12px;color:var(--grey);font-weight:300;
+  line-height:1.65;text-align:center;max-width:200px;margin-bottom:22px;
+}
+
+.queue-card{
+  width:100%;background:var(--gl);border:1px solid var(--border);
+  border-radius:14px;padding:14px 16px;margin-bottom:16px;
+}
+.queue-num{
+  font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--grey);margin-bottom:10px;
+}
+.queue-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:6px 0;border-bottom:1px solid var(--border);
+}
+.queue-row:last-child{border-bottom:none;padding-bottom:0;}
+.queue-row.total{padding-top:10px;margin-top:4px;}
+.queue-row-label{font-size:12px;color:var(--grey);font-weight:300;}
+.queue-row-val{font-size:12px;color:var(--gd);font-weight:500;text-align:right;}
+.queue-total-label{font-size:13px;font-weight:700;color:var(--gd);}
+.queue-total-val{
+  font-family:var(--serif);font-size:20px;font-weight:600;color:var(--gd);
+}
+
+.dark-sticky{flex-shrink:0;padding:14px 18px 24px;background:var(--bg);border-top:1px solid var(--border);}
+.dark-btn{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:9999px;padding:14px;
+  font-family:var(--sans);font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .15s;letter-spacing:-.01em;
+}
+.dark-btn:hover{background:var(--accent);}
+
+/* ── Failed screen ── */
+.fail-icon-wrap{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--red-s);border:1.5px solid #FECACA;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;
+}
+.fail-icon-wrap svg{width:28px;height:28px;stroke:var(--red);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+
+.fail-headline{
+  font-family:var(--serif);font-size:28px;font-weight:600;
+  color:var(--gd);text-align:center;margin-bottom:10px;
+}
+.fail-sub{
+  font-size:13px;color:var(--grey);font-weight:300;
+  line-height:1.65;text-align:center;max-width:210px;margin:0 auto 22px;
+}
+
+.fail-info-card{
+  width:100%;background:var(--gl);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;margin-bottom:22px;
+}
+.fail-info-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+}
+.fail-info-row:last-child{border-bottom:none;}
+.fail-info-label{font-size:12px;color:var(--grey);font-weight:300;}
+.fail-info-val{font-size:12px;color:var(--gd);font-weight:500;}
+.fail-total-label{font-size:13px;font-weight:700;color:var(--gd);}
+.fail-total-val{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--gd);}
+
+.ghost-btn{
+  width:100%;background:none;border:none;
+  font-family:var(--sans);font-size:14px;font-weight:500;
+  color:var(--gd);padding:14px;cursor:pointer;
+  transition:color .15s;
+}
+.ghost-btn:hover{color:var(--accent);}
+
+.help-note{
+  font-size:11px;color:var(--grey);font-weight:300;
+  text-align:center;padding:10px 0 6px;
+}
+.help-note a{color:var(--accent);text-decoration:none;}
+.help-note a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ SCREEN 1 — SECURE PAYMENT (Android/UPI) ══════════ -->
+<div>
+<div class="stag">Payment — Android / UPI</div>
+<div class="phone">
+
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="screen-title-serif">Secure Payment</span>
+  </div>
+
+  <div class="sbody">
+
+    <!-- Summary card -->
+    <div class="summary-card">
+      <div class="summary-label">Total Amount Due</div>
+      <div class="summary-amount">₹ 14.00</div>
+      <div class="summary-divider"></div>
+      <div class="summary-row">
+        <span class="summary-row-label">4 Pages (Color)</span>
+        <span class="summary-row-val">₹ 10.00</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-row-label">Processing Fee</span>
+        <span class="summary-row-val">₹ 4.00</span>
+      </div>
+    </div>
+
+    <!-- Quick Pay -->
+    <div class="sl">Quick Pay</div>
+    <button class="upi-btn">
+      <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Pay with UPI Apps
+    </button>
+
+    <!-- OR SCAN QR -->
+    <div class="sl">Or Scan QR</div>
+    <div class="qr-zone-dashed">
+      <!-- Corner-bracket QR placeholder matching screenshot -->
+      <div class="qr-placeholder">
+        <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- top-left corner -->
+          <path d="M10 30 L10 10 L30 10" stroke="#0D1F3C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- top-right corner -->
+          <path d="M80 10 L100 10 L100 30" stroke="#0D1F3C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- bottom-left corner -->
+          <path d="M10 80 L10 100 L30 100" stroke="#0D1F3C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- bottom-right corner -->
+          <path d="M80 100 L100 100 L100 80" stroke="#0D1F3C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Center square -->
+          <rect x="38" y="38" width="34" height="34" rx="4" fill="#0D1F3C"/>
+          <!-- dashed scan lines -->
+          <line x1="20" y1="55" x2="35" y2="55" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+          <line x1="75" y1="55" x2="90" y2="55" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+          <line x1="55" y1="20" x2="55" y2="35" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+          <line x1="55" y1="75" x2="55" y2="90" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="qr-caption">Scan this code using any UPI app<br/>on another device to pay</div>
+    </div>
+
+    <div style="height:14px;"></div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <button class="cancel-text-btn">Cancel Order</button>
+    <button class="person-btn" aria-label="Profile">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 2 — PAYMENT GATEWAY (QR / Waiting) ══════════ -->
+<div>
+<div class="stag">Payment Gateway — QR Scan</div>
+<div class="phone">
+
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="screen-title-sans">Payment Gateway</span>
+  </div>
+
+  <div class="sbody">
+
+    <!-- Order summary -->
+    <div class="summary-card">
+      <div class="summary-label">Order Summary</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="summary-amount" style="font-size:30px;margin-bottom:4px;">₹ 14.00</div>
+          <div style="font-size:11px;color:var(--grey);font-weight:300;">4 Pages (Color) · Kiosk #08</div>
+        </div>
+        <div class="txn-id">TXN ID<span>CP-882010</span></div>
+      </div>
+    </div>
+
+    <!-- Full dense QR -->
+    <div class="qr-card">
+      <div class="qr-full" style="position:relative;">
+        <svg width="170" height="170" viewBox="0 0 170 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="170" height="170" fill="white"/>
+          <!-- dense dot grid -->
+          <rect x="0" y="0" width="170" height="170" fill="white"/>
+          <!-- top-left finder -->
+          <rect x="8" y="8" width="46" height="46" rx="4" fill="#0D1F3C"/>
+          <rect x="14" y="14" width="34" height="34" rx="2" fill="white"/>
+          <rect x="20" y="20" width="22" height="22" rx="1" fill="#0D1F3C"/>
+          <!-- top-right finder -->
+          <rect x="116" y="8" width="46" height="46" rx="4" fill="#0D1F3C"/>
+          <rect x="122" y="14" width="34" height="34" rx="2" fill="white"/>
+          <rect x="128" y="20" width="22" height="22" rx="1" fill="#0D1F3C"/>
+          <!-- bottom-left finder -->
+          <rect x="8" y="116" width="46" height="46" rx="4" fill="#0D1F3C"/>
+          <rect x="14" y="122" width="34" height="34" rx="2" fill="white"/>
+          <rect x="20" y="128" width="22" height="22" rx="1" fill="#0D1F3C"/>
+          <!-- data dots — rows of varied pattern -->
+          <!-- row 1 -->
+          <rect x="64" y="8" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="76" y="8" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="8" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="8" width="0" height="0" rx="1" fill="#0D1F3C"/>
+          <!-- row 2 -->
+          <rect x="64" y="20" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="20" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="20" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <!-- row 3 -->
+          <rect x="76" y="32" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="32" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="32" width="0" height="0" rx="1" fill="#0D1F3C"/>
+          <!-- row 4 -->
+          <rect x="64" y="44" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="44" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <!-- timing row -->
+          <rect x="8" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="20" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="32" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="44" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="64" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="76" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="124" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="148" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="160" y="62" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <!-- data block rows -->
+          <rect x="8" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="32" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="64" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="136" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="148" y="74" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="20" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="44" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="76" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="124" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="160" y="86" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="8" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="32" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="64" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="148" y="98" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="20" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="56" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="76" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="124" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="136" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="160" y="110" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <!-- bottom data -->
+          <rect x="64" y="122" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="122" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="122" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="136" y="122" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="148" y="122" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="64" y="134" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="100" y="134" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="124" y="134" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="160" y="134" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="76" y="146" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="88" y="146" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="112" y="146" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="148" y="146" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <rect x="160" y="146" width="7" height="7" rx="1" fill="#0D1F3C"/>
+          <!-- center white area for badge -->
+          <rect x="70" y="70" width="30" height="30" rx="4" fill="white"/>
+        </svg>
+        <!-- center badge -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+             width:30px;height:30px;background:#fff;border-radius:7px;
+             display:flex;align-items:center;justify-content:center;
+             border:1px solid var(--border);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D1F3C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scan-headline">Scan to Pay</div>
+      <div class="scan-sub">Open any UPI app (GPay, PhonePe, Paytm) to scan and authorize the transaction.</div>
+      <div class="bhim-label">BHIM UPI</div>
+    </div>
+
+    <div style="height:8px;"></div>
+  </div>
+
+  <!-- Waiting bar -->
+  <div class="waiting-bar">
+    <div class="waiting-dot"></div>
+    <div class="waiting-text">WAITING FOR PAYMENT CONFIRMATION... &nbsp;&nbsp;&nbsp; WAITING FOR PAYMENT CONFIRMATION...</div>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 3 — SECURELY PROCESSING ══════════ -->
+<div>
+<div class="stag">Processing Payment</div>
+<div class="phone">
+
+  <div class="centered-screen">
+
+    <!-- Brand top -->
+    <div class="brand-top">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="brand-name">Presidency University</div>
+    </div>
+
+    <!-- Concentric rings -->
+    <div class="rings-wrap">
+      <div class="ring-outer"></div>
+      <div class="ring-mid"></div>
+      <div class="ring-inner"></div>
+      <div class="ring-center">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+    </div>
+
+    <h1 class="processing-headline">Securely Processing..</h1>
+    <p class="processing-sub">Waiting for payment confirmation from your provider. This usually takes a few seconds.</p>
+
+    <!-- Print queue card -->
+    <div class="queue-card">
+      <div class="queue-num">Print Queue #8821</div>
+      <div class="queue-row">
+        <span class="queue-row-label">Economics_Thesis_Final.pdf</span>
+        <span class="queue-row-val">12 pgs</span>
+      </div>
+      <div class="queue-row">
+        <span class="queue-row-label">Kiosk Location</span>
+        <span class="queue-row-val">Library Wing B</span>
+      </div>
+      <div class="queue-row total">
+        <span class="queue-total-label">Total Amount</span>
+        <span class="queue-total-val">₹ 24.00</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="dark-sticky">
+    <button class="dark-btn">Cancel Transaction</button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══════════ SCREEN 4 — PAYMENT FAILED ══════════ -->
+<div>
+<div class="stag">Payment Failed</div>
+<div class="phone">
+
+  <div class="centered-screen" style="padding-top:28px;">
+
+    <!-- Brand top -->
+    <div class="brand-top" style="margin-bottom:24px;">
+      <div class="brand-name">Presidency University</div>
+    </div>
+
+    <!-- Error icon -->
+    <div class="fail-icon-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+
+    <h1 class="fail-headline">Payment Failed</h1>
+    <p class="fail-sub">We couldn't process your transaction. This might be due to insufficient funds or a temporary connection issue.</p>
+
+    <!-- Info card -->
+    <div class="fail-info-card">
+      <div class="fail-info-row">
+        <span class="fail-info-label">Document: Final_Thesis.pdf</span>
+        <span class="fail-info-val">12 Pages</span>
+      </div>
+      <div class="fail-info-row">
+        <span class="fail-info-label">Transaction ID</span>
+        <span class="fail-info-val">#PU-82910</span>
+      </div>
+      <div class="fail-info-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+        <span class="fail-total-label">Total Amount</span>
+        <span class="fail-total-val">₹ 24.00</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Action buttons -->
+  <div class="dark-sticky" style="padding-bottom:14px;">
+    <button class="dark-btn" style="margin-bottom:2px;">Retry Payment</button>
+    <button class="ghost-btn">Change Payment Method</button>
+    <div class="help-note">Need help? Visit the <a href="#">Library IT Desk</a></div>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
+
+
+/* END OF SCREEN_4_PAYMENT */
+══════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_5_OTP_CONFIRMATION                                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusPrint — OTP & Confirmation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1F3C; --accent:#2B4EAA; --accent-s:#EEF2FF;
+  --gd:#374151; --grey:#6B7280; --gl:#F3F4F6; --border:#E5E7EB; --bg:#FFFFFF;
+  --green:#10B981; --green-s:#ECFDF5; --red:#EF4444; --red-s:#FEF2F2;
+  --amber:#F59E0B; --amber-s:#FFFBEB;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+body{
+  font-family:var(--sans);background:#ECEEF2;
+  min-height:100vh;display:flex;align-items:flex-start;
+  justify-content:center;gap:20px;padding:40px 16px 60px;flex-wrap:wrap;
+}
+.phone{
+  width:280px;min-height:580px;background:var(--bg);
+  border-radius:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.05);
+  overflow:hidden;display:flex;flex-direction:column;position:relative;
+}
+.stag{
+  text-align:center;font-size:10px;font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--grey);margin-bottom:12px;
+}
+
+/* ── brand top ── */
+.brand-top{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:22px 0 0;margin-bottom:16px;
+}
+.brand-icon svg{width:24px;height:24px;stroke:var(--gd);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.brand-name{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gd);}
+
+/* ── top bar ── */
+.top-bar{display:flex;align-items:center;padding:20px 16px 8px;flex-shrink:0;}
+.back-btn{background:none;border:none;cursor:pointer;padding:6px;color:var(--gd);display:flex;border-radius:8px;transition:background .15s;}
+.back-btn:hover{background:var(--gl);}
+.back-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ttl-serif{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--gd);flex:1;text-align:center;margin-right:28px;}
+
+/* ── dark header ── */
+.dark-header{
+  background:var(--navy);padding:22px 18px 20px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+}
+.dark-header .brand-icon svg{stroke:#fff;opacity:.7;}
+.dark-header .brand-name{color:rgba(255,255,255,.5);}
+.dark-header h1{font-family:var(--serif);font-size:26px;font-weight:600;color:#fff;margin-top:8px;margin-bottom:6px;}
+.dark-header p{font-size:12px;color:rgba(255,255,255,.55);font-weight:300;line-height:1.55;max-width:200px;}
+
+/* ── OTP ring ── */
+.otp-ring-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:18px 0 0;
+}
+.ring-svg-wrap{position:relative;width:140px;height:140px;margin:0 auto;}
+.ring-svg-wrap svg{width:140px;height:140px;transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:#E5E7EB;stroke-width:5;}
+.ring-fill{fill:none;stroke-width:5;stroke-linecap:round;stroke-dasharray:408;}
+.ring-fill.blue{stroke:var(--accent);stroke-dashoffset:100;animation:countdownBlue 42s linear forwards;}
+.ring-fill.amber{stroke:var(--amber);stroke-dashoffset:366;}
+.ring-fill.red{stroke:var(--red);stroke-dashoffset:395;}
+@keyframes countdownBlue{to{stroke-dashoffset:408;}}
+
+.otp-inner{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;
+}
+.otp-sub-label{font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--grey);margin-bottom:4px;}
+.otp-code{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--gd);letter-spacing:.08em;line-height:1;}
+.otp-timer{font-size:12px;font-weight:600;margin-top:4px;}
+.otp-timer.blue{color:var(--accent);}
+.otp-timer.amber{color:var(--amber);}
+.otp-timer.red{color:var(--red);}
+
+.otp-note{font-size:11px;color:var(--grey);font-weight:300;text-align:center;line-height:1.55;padding:0 20px;margin-top:12px;}
+.otp-note strong{color:var(--gd);font-weight:600;}
+
+/* ── warning text ── */
+.warn-text{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  text-align:center;margin:8px 0 0;
+}
+.warn-text.amber{color:var(--amber);}
+.warn-text.red{color:var(--red);}
+
+/* ── bottom bar ── */
+.bot-bar{
+  flex-shrink:0;background:var(--navy);padding:12px 16px 20px;
+  display:flex;align-items:center;gap:10px;
+}
+.bot-bar .refresh-btn{
+  flex:1;background:#fff;color:var(--navy);border:none;
+  border-radius:9999px;padding:12px;font-family:var(--sans);
+  font-size:13px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .15s;
+}
+.bot-bar .refresh-btn:hover{background:#e8eeff;}
+.bot-bar .refresh-btn svg{width:14px;height:14px;stroke:var(--navy);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.shield-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.55);padding:8px;display:flex;}
+.shield-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── 4-digit boxes ── */
+.digit-row{display:flex;justify-content:center;gap:10px;margin:16px 0 14px;}
+.digit-box{
+  width:52px;height:58px;border:1.5px solid var(--border);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:26px;font-weight:600;color:var(--gd);
+  background:var(--gl);
+}
+.digit-box.active{border-color:var(--accent);background:#fff;}
+.digit-box.expired{color:var(--border);background:var(--gl);border-color:var(--border);}
+
+/* ── numpad ── */
+.numpad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+  padding:0 16px;
+}
+.num-key{
+  background:none;border:none;cursor:pointer;
+  padding:14px 0;font-family:var(--sans);font-size:18px;
+  font-weight:500;color:var(--gd);border-radius:10px;
+  transition:background .12s;display:flex;align-items:center;justify-content:center;
+}
+.num-key:hover{background:var(--gl);}
+.num-key svg{width:18px;height:18px;stroke:var(--gd);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── timer pill ── */
+.timer-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:9999px;padding:5px 16px;font-size:13px;font-weight:700;
+  margin:0 auto 8px;
+}
+.timer-pill.amber{background:var(--amber-s);color:var(--amber);border:1px solid #FDE68A;}
+.timer-pill.red{background:var(--red-s);color:var(--red);border:1px solid #FECACA;}
+
+/* ── warning row ── */
+.warn-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;margin-bottom:10px;}
+.warn-row.amber{color:var(--amber);}
+.warn-row.red{color:var(--red);}
+.warn-row svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── regen link ── */
+.regen-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  background:none;border:1.5px solid var(--border);border-radius:9999px;
+  padding:10px 20px;margin:0 auto;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--gd);
+  transition:border-color .15s,color .15s;
+}
+.regen-btn:hover{border-color:var(--accent);color:var(--accent);}
+.regen-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── code expired pill ── */
+.expired-pill{
+  display:inline-block;background:var(--red-s);color:var(--red);
+  border:1px solid #FECACA;border-radius:9999px;
+  padding:4px 16px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:16px;
+}
+
+/* ── bottom bar v2 (white bg) ── */
+.bot-bar-white{
+  flex-shrink:0;background:var(--bg);border-top:1px solid var(--border);
+  padding:12px 16px 22px;
+  display:flex;align-items:center;gap:10px;
+}
+.cancel-btn-text{
+  flex:1;background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--gd);
+  text-align:center;padding:10px 0;
+}
+.person-icon{background:none;border:none;cursor:pointer;color:var(--grey);padding:8px;display:flex;}
+.person-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── dark btn full width ── */
+.dark-btn-full{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:12px;padding:14px;font-family:var(--sans);
+  font-size:14px;font-weight:600;cursor:pointer;letter-spacing:-.01em;
+  transition:background .15s;
+}
+.dark-btn-full:hover{background:var(--accent);}
+
+/* ── ghost link btn ── */
+.ghost-link{
+  display:block;text-align:center;background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;color:var(--accent);font-weight:500;
+  padding:10px;transition:opacity .15s;
+}
+.ghost-link:hover{opacity:.7;}
+
+/* ── SECURITY SESSION expired ── */
+.sec-session-label{
+  font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--grey);text-align:center;margin-bottom:10px;
+}
+.expired-code-display{
+  font-family:var(--serif);font-size:32px;font-weight:600;
+  color:#D1D5DB;text-align:center;letter-spacing:.15em;
+  text-decoration:line-through;text-decoration-color:#CBD5E1;margin-bottom:8px;
+}
+
+/* ── cloud backed up modal ── */
+.modal-card{
+  background:#fff;border-radius:24px;padding:24px 20px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  margin:16px;
+}
+.cloud-success-ring{
+  width:60px;height:60px;border-radius:50%;
+  background:var(--green-s);border:1.5px solid #A7F3D0;
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.cloud-success-ring svg{width:28px;height:28px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.cloud-modal-title{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--gd);margin-bottom:6px;}
+.cloud-modal-sub{font-size:12px;color:var(--grey);font-weight:300;line-height:1.6;max-width:200px;margin-bottom:16px;}
+.cloud-service-row{display:flex;justify-content:center;gap:16px;margin-bottom:14px;}
+.cloud-svc{position:relative;width:44px;height:44px;}
+.cloud-svc-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--gl);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+}
+.cloud-svc-check{
+  position:absolute;bottom:-4px;right:-4px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--green);border:2px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.cloud-svc-check svg{width:8px;height:8px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.all-backed-pill{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--green);margin-bottom:16px;
+}
+.green-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:gpulse 1.5s infinite;}
+@keyframes gpulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── payment success screen ── */
+.success-screen{flex:1;display:flex;flex-direction:column;align-items:center;padding:28px 20px 0;text-align:center;}
+.confetti-wrap{position:relative;width:120px;height:120px;margin-bottom:20px;}
+.confetti-dot{position:absolute;border-radius:2px;}
+.success-circle{
+  width:72px;height:72px;border-radius:50%;background:var(--navy);
+  display:flex;align-items:center;justify-content:center;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.success-circle svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.success-headline{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--gd);margin-bottom:8px;}
+.success-sub{font-size:12px;color:var(--grey);font-weight:300;line-height:1.65;max-width:200px;margin-bottom:24px;}
+.info-rows{width:100%;border-top:1px solid var(--border);}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-row-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);}
+.info-row-val{font-size:13px;font-weight:600;color:var(--gd);}
+
+/* ── print receipt ── */
+.receipt-screen{flex:1;overflow-y:auto;padding:0 16px;scrollbar-width:none;}
+.receipt-screen::-webkit-scrollbar{display:none;}
+.success-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--green-s);color:var(--green);border:1px solid #A7F3D0;
+  border-radius:9999px;padding:4px 12px;font-size:11px;font-weight:600;
+  margin-bottom:10px;
+}
+.success-badge svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.receipt-label{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);margin-bottom:4px;}
+.receipt-total{font-family:var(--serif);font-size:36px;font-weight:600;color:var(--gd);margin-bottom:4px;}
+.receipt-txn{font-size:10px;color:var(--grey);font-weight:300;margin-bottom:14px;}
+.receipt-rows{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.receipt-row{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--border);}
+.receipt-row:last-child{border-bottom:none;}
+.receipt-row-label{font-size:11px;color:var(--grey);font-weight:300;}
+.receipt-row-val{font-size:12px;color:var(--gd);font-weight:600;text-align:right;}
+.download-btn{
+  width:100%;background:var(--navy);color:#fff;border:none;
+  border-radius:12px;padding:13px;font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:background .15s;margin-bottom:10px;
+}
+.download-btn:hover{background:var(--accent);}
+.download-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.email-note{font-size:10px;color:var(--grey);font-weight:300;text-align:center;line-height:1.5;margin-bottom:12px;}
+
+.done-bot{
+  flex-shrink:0;background:var(--navy);padding:12px 16px 20px;
+  display:flex;align-items:center;gap:10px;
+}
+.done-back{background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;padding:8px;display:flex;}
+.done-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.done-btn{
+  flex:1;background:#fff;color:var(--navy);border:none;border-radius:9999px;
+  padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;
+  transition:background .15s;
+}
+.done-btn:hover{background:#e8eeff;}
+.done-person{background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;padding:8px;display:flex;}
+.done-person svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* grid overlay for blurred bg screens */
+.blurred-bg{
+  flex:1;background:linear-gradient(160deg,#e2e8f0 0%,#c7d2e8 100%);
+  display:flex;align-items:center;justify-content:center;padding:16px;
+  position:relative;
+}
+.blurred-bg::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,.3);backdrop-filter:blur(4px);
+}
+.blurred-bg > *{position:relative;z-index:1;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ 1 — PAYMENT SUCCESSFUL ══════════ -->
+<div>
+<div class="stag">Payment Successful</div>
+<div class="phone">
+  <div class="success-screen">
+    <!-- confetti + circle -->
+    <div class="confetti-wrap">
+      <!-- scattered dots -->
+      <div class="confetti-dot" style="width:6px;height:6px;background:#2B4EAA;top:8px;left:54px;transform:rotate(20deg);"></div>
+      <div class="confetti-dot" style="width:5px;height:5px;background:#2B4EAA;top:14px;right:20px;transform:rotate(-15deg);"></div>
+      <div class="confetti-dot" style="width:4px;height:4px;background:#9CA3AF;top:6px;left:28px;transform:rotate(45deg);"></div>
+      <div class="confetti-dot" style="width:7px;height:3px;background:#2B4EAA;bottom:18px;left:14px;transform:rotate(-30deg);"></div>
+      <div class="confetti-dot" style="width:5px;height:5px;background:#9CA3AF;bottom:22px;right:22px;transform:rotate(10deg);"></div>
+      <div class="confetti-dot" style="width:4px;height:4px;background:#2B4EAA;top:30px;left:8px;transform:rotate(60deg);"></div>
+      <div class="confetti-dot" style="width:6px;height:3px;background:#9CA3AF;top:20px;right:8px;transform:rotate(-45deg);"></div>
+      <div class="confetti-dot" style="width:3px;height:6px;background:#2B4EAA;bottom:8px;left:44px;transform:rotate(25deg);"></div>
+      <div class="success-circle">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+
+    <h1 class="success-headline">Payment Successful</h1>
+    <p class="success-sub">Your documents are being processed and will begin printing at Kiosk #04 shortly.</p>
+
+    <div class="info-rows">
+      <div class="info-row">
+        <span class="info-row-label">Transaction ID</span>
+        <span class="info-row-val">#PU-8829-X</span>
+      </div>
+      <div class="info-row">
+        <span class="info-row-label">Print Credits</span>
+        <span class="info-row-val">12.50 INR</span>
+      </div>
+      <div class="info-row">
+        <span class="info-row-label">File Name</span>
+        <span class="info-row-val">Thesis_Draft_V2.pdf</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-shrink:0;padding:14px 16px 24px;background:var(--bg);border-top:1px solid var(--border);">
+    <button class="dark-btn-full" style="border-radius:9999px;">Done</button>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 2 — VERIFY KIOSK (OTP active) ══════════ -->
+<div>
+<div class="stag">OTP — Active (00:42)</div>
+<div class="phone">
+  <div class="dark-header">
+    <div class="brand-top" style="padding:0;margin-bottom:8px;">
+      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="brand-name" style="color:rgba(255,255,255,.45);">Presidency University</div>
+    </div>
+    <h1>Verify Kiosk</h1>
+    <p>Enter this code on the kiosk screen to authorize your print queue.</p>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px 0;">
+    <!-- ring -->
+    <div class="ring-svg-wrap" style="margin-bottom:8px;">
+      <svg viewBox="0 0 140 140">
+        <circle class="ring-track" cx="70" cy="70" r="65"/>
+        <circle class="ring-fill blue" cx="70" cy="70" r="65"/>
+      </svg>
+      <div class="otp-inner">
+        <div class="otp-sub-label">One-Time Passcode</div>
+        <div class="otp-code">842 901</div>
+        <div class="otp-timer blue">00:42</div>
+      </div>
+    </div>
+
+    <p class="otp-note">This code is unique to kiosk <strong>LIB-04</strong> and will expire shortly. Do not share this code with others.</p>
+  </div>
+
+  <div class="bot-bar">
+    <button class="bot-bar" style="all:unset;display:contents;">
+    </button>
+    <button class="refresh-btn" style="flex:1;background:#fff;color:var(--navy);border:none;border-radius:9999px;padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="var(--navy)" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Refresh Code
+    </button>
+    <button class="shield-btn">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </button>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 3 — VERIFICATION (OTP low time, 4-digit input) ══════════ -->
+<div>
+<div class="stag">OTP — Low Time Warning</div>
+<div class="phone">
+  <div class="top-bar">
+    <button class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="ttl-serif">Verification</span>
+  </div>
+
+  <div style="flex:1;padding:0 16px;display:flex;flex-direction:column;">
+    <p style="font-size:12px;color:var(--grey);font-weight:300;line-height:1.6;margin-bottom:16px;text-align:center;">Enter the 4-digit code sent to your registered university email.</p>
+
+    <!-- digit boxes -->
+    <div class="digit-row">
+      <div class="digit-box">8</div>
+      <div class="digit-box">2</div>
+      <div class="digit-box">0</div>
+      <div class="digit-box active" style="border-color:var(--accent);">_</div>
+    </div>
+
+    <!-- timer pill -->
+    <div style="text-align:center;margin-bottom:6px;">
+      <div class="timer-pill amber">00:08</div>
+    </div>
+
+    <!-- warning -->
+    <div class="warn-row amber" style="margin-bottom:14px;">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Code expires soon
+    </div>
+
+    <!-- regen link -->
+    <div style="text-align:center;margin-bottom:16px;">
+      <button class="regen-btn">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Request New Code
+      </button>
+    </div>
+
+    <!-- numpad -->
+    <div class="numpad">
+      <button class="num-key">1</button>
+      <button class="num-key">2</button>
+      <button class="num-key">3</button>
+      <button class="num-key">4</button>
+      <button class="num-key">5</button>
+      <button class="num-key">6</button>
+      <button class="num-key">7</button>
+      <button class="num-key">8</button>
+      <button class="num-key">9</button>
+      <button class="num-key" style="grid-column:2;">0</button>
+      <button class="num-key">
+        <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 4 — VERIFY PRINT JOB (red critical) ══════════ -->
+<div>
+<div class="stag">OTP — Critical (Expires Soon)</div>
+<div class="phone">
+  <div class="brand-top">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 20px;">
+    <h1 style="font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gd);text-align:center;margin-bottom:8px;">Verify Print Job</h1>
+    <p style="font-size:12px;color:var(--grey);font-weight:300;text-align:center;line-height:1.6;margin-bottom:16px;">Enter the code shown on the kiosk display to authorize your document.</p>
+
+    <!-- 4 digit boxes -->
+    <div class="digit-row" style="margin-bottom:16px;">
+      <div class="digit-box">8</div>
+      <div class="digit-box">4</div>
+      <div class="digit-box">2</div>
+      <div class="digit-box">9</div>
+    </div>
+
+    <!-- red ring timer -->
+    <div style="position:relative;width:80px;height:80px;margin-bottom:10px;">
+      <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg);">
+        <circle fill="none" stroke="#FEE2E2" stroke-width="4" cx="40" cy="40" r="34"/>
+        <circle fill="none" stroke="#EF4444" stroke-width="4" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="187" cx="40" cy="40" r="34"/>
+      </svg>
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:700;color:var(--red);">0:08</div>
+    </div>
+
+    <div class="warn-text red" style="margin-bottom:14px;">Expires Soon — Refresh Now</div>
+
+    <button class="regen-btn" style="border-color:var(--red);color:var(--red);">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Regenerate Code
+    </button>
+  </div>
+
+  <div class="bot-bar-white">
+    <button class="back-btn" style="padding:8px;"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="cancel-btn-text">Cancel Request</button>
+    <button class="person-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></button>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 5 — TIME WINDOW CLOSED / SESSION TIMED OUT ══════════ -->
+<div>
+<div class="stag">OTP Expired — Time Window Closed</div>
+<div class="phone">
+  <div class="brand-top">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+    <div class="brand-name">Presidency University</div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 20px;">
+    <!-- expired code display -->
+    <div style="background:var(--gl);border:1px solid var(--border);border-radius:14px;padding:16px 20px;width:100%;text-align:center;margin-bottom:20px;">
+      <div class="sec-session-label">Security Session</div>
+      <div class="expired-code-display">592 104</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--red);"></div>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);">Expired</span>
+      </div>
+    </div>
+
+    <h1 style="font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gd);text-align:center;margin-bottom:8px;">Time Window Closed</h1>
+    <p style="font-size:12px;color:var(--grey);font-weight:300;text-align:center;line-height:1.65;max-width:210px;margin-bottom:22px;">For your security, print verification codes expire after 2 minutes. Please generate a new one to proceed.</p>
+
+    <button class="dark-btn-full" style="margin-bottom:12px;">Generate New Code</button>
+    <button class="ghost-link">Return to Home</button>
+
+    <div style="margin-top:auto;padding-bottom:12px;">
+      <p style="font-size:10px;color:var(--grey);font-weight:300;text-align:center;">Session ID: PU-4829-XP · Kiosk #04 (Library)</p>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 6 — SESSION TIMED OUT (code expired variant) ══════════ -->
+<div>
+<div class="stag">Session Timed Out</div>
+<div class="phone">
+  <div class="brand-top">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+    <div class="brand-name">Presidency University</div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:0 20px 0;">
+    <!-- error icon -->
+    <div style="width:60px;height:60px;border-radius:50%;background:var(--red-s);border:1.5px solid #FECACA;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+
+    <h1 style="font-family:var(--serif);font-size:26px;font-weight:600;color:var(--gd);text-align:center;margin-bottom:8px;">Session Timed Out</h1>
+    <p style="font-size:12px;color:var(--grey);font-weight:300;text-align:center;line-height:1.65;max-width:200px;margin-bottom:18px;">For your security, the verification code has expired. Please request a new one to continue.</p>
+
+    <!-- expired digit boxes -->
+    <div class="digit-row" style="margin-bottom:12px;">
+      <div class="digit-box expired">4</div>
+      <div class="digit-box expired">8</div>
+      <div class="digit-box expired">2</div>
+      <div class="digit-box expired">9</div>
+    </div>
+    <div style="text-align:center;margin-bottom:18px;">
+      <span class="expired-pill">Code Expired</span>
+    </div>
+
+    <button class="dark-btn-full" style="margin-bottom:10px;">Generate New Code</button>
+    <button class="ghost-link">Back to Login</button>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 7 — ALL FILES BACKED UP (modal) ══════════ -->
+<div>
+<div class="stag">Cloud Sync — All Files Backed Up</div>
+<div class="phone">
+  <div class="brand-top">
+    <div class="brand-name" style="color:var(--grey);">Presidency University</div>
+  </div>
+
+  <div class="blurred-bg">
+    <div class="modal-card">
+      <div class="cloud-success-ring">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="cloud-modal-title">All files backed up</div>
+      <div class="cloud-modal-sub">Sync complete across your linked academic repositories.</div>
+
+      <!-- service icons -->
+      <div class="cloud-service-row">
+        <!-- Google Drive style -->
+        <div class="cloud-svc">
+          <div class="cloud-svc-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L3 19h6l3-5.5L15 19h6L12 2z" fill="#4285F4" opacity=".8"/>
+              <path d="M3 19l4.5-8h9L21 19H3z" fill="#34A853" opacity=".6"/>
+              <path d="M8.5 11L5 17l-2-2 5.5-9.5L8.5 11z" fill="#FBBC04" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="cloud-svc-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+        <!-- Dropbox style -->
+        <div class="cloud-svc">
+          <div class="cloud-svc-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M6 3L12 7 6 11 0 7 6 3Z" fill="#0061FF" transform="translate(1,1)" opacity=".8"/>
+              <path d="M18 3L24 7 18 11 12 7 18 3Z" fill="#0061FF" transform="translate(-1,1)" opacity=".6"/>
+              <path d="M6 13L12 9 18 13 12 17 6 13Z" fill="#0061FF" transform="translate(0,1)" opacity=".7"/>
+            </svg>
+          </div>
+          <div class="cloud-svc-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+      </div>
+
+      <div class="all-backed-pill">
+        <div class="green-dot"></div>
+        All Files Backed Up
+      </div>
+
+      <button class="dark-btn-full">Proceed to Print</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<!-- ══════════ 8 — PRINT RECEIPT ══════════ -->
+<div>
+<div class="stag">Print Receipt</div>
+<div class="phone">
+  <div class="brand-top" style="padding-top:18px;margin-bottom:10px;">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+    <div class="brand-name">Presidency University</div>
+  </div>
+  <div style="text-align:center;margin-bottom:10px;">
+    <span style="font-family:var(--serif);font-size:22px;font-weight:600;color:var(--gd);">Print Receipt</span>
+  </div>
+
+  <div class="receipt-screen">
+    <div style="text-align:center;margin-bottom:10px;">
+      <span class="success-badge">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Payment Successful
+      </span>
+    </div>
+
+    <div class="receipt-label">Total Paid</div>
+    <div class="receipt-total">₹34.50</div>
+    <div class="receipt-txn">TXN: PU-7742-9901-CP</div>
+
+    <div class="receipt-rows">
+      <div class="receipt-row">
+        <span class="receipt-row-label">Date</span>
+        <span class="receipt-row-val">Oct 24, 2024 · 14:22</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-row-label">Location</span>
+        <span class="receipt-row-val">Main Library – Floor 2</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-row-label">Items</span>
+        <span class="receipt-row-val">12 Pages (Color/A4)</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-row-label">Payment Method</span>
+        <span class="receipt-row-val">Student Wallet</span>
+      </div>
+    </div>
+
+    <button class="download-btn">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download PDF
+    </button>
+    <div class="email-note">A digital copy has also been sent to your university email address.</div>
+  </div>
+
+  <div class="done-bot">
+    <button class="done-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button class="done-btn">Done</button>
+    <button class="done-person"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></button>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
+
+
+/* END OF SCREEN_5_OTP_CONFIRMATION */
+══════════════════════════════════════════════════════════════════════════
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SCREEN_6_PROFILE_CLOUD_ACTIVITY                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CampusPrint — Profile · Cloud · Activity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1F3C;
+  --accent:#2B4EAA;
+  --accent-s:#EEF2FF;
+  --gd:#1F2937;
+  --grey:#9CA3AF;
+  --grey-mid:#6B7280;
+  --gl:#F9FAFB;
+  --border:#F3F4F6;
+  --bg:#FFFFFF;
+  --green:#10B981;
+  --green-s:#ECFDF5;
+  --amber:#F59E0B;
+  --amber-s:#FFFBEB;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+
+body{
+  font-family:var(--sans);
+  background:#ECEEF2;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:28px;
+  padding:40px 20px 60px;
+  flex-wrap:wrap;
+}
+
+/* phone */
+.phone{
+  width:290px;
+  min-height:580px;
+  background:var(--bg);
+  border-radius:40px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.04);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.phone.wide{ width:320px; border-radius:24px; }
+
+.stag{
+  text-align:center;
+  font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--grey);margin-bottom:14px;
+}
+
+/* scrollable area */
+.body{flex:1;overflow-y:auto;scrollbar-width:none;}
+.body::-webkit-scrollbar{display:none;}
+
+/* top bar */
+.tbar{
+  display:flex;align-items:center;
+  padding:24px 22px 12px;
+  flex-shrink:0;
+}
+.back{
+  background:none;border:none;cursor:pointer;
+  color:var(--grey);padding:4px;display:flex;
+}
+.back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.tbar-title{
+  font-family:var(--serif);font-size:20px;font-weight:600;font-style:italic;
+  color:var(--gd);flex:1;text-align:center;margin-right:26px;
+}
+.tbar-label{
+  font-size:12px;font-weight:400;color:var(--grey);
+  flex:1;text-align:center;margin-right:26px;
+}
+
+/* bottom bar */
+.bbar{
+  flex-shrink:0;
+  background:var(--navy);
+  padding:14px 20px 26px;
+  display:flex;align-items:center;gap:12px;
+}
+.bbar-pill{
+  flex:1;background:#fff;color:var(--navy);border:none;
+  border-radius:9999px;padding:13px;
+  font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.bbar-pill:hover{background:#e8eeff;}
+.bbar-ico{
+  background:none;border:none;cursor:pointer;
+  color:rgba(255,255,255,.4);padding:6px;display:flex;
+}
+.bbar-ico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.pill-badge{
+  position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;
+  border-radius:9999px;padding:2px 10px;
+  font-size:9px;font-weight:700;white-space:nowrap;
+  border:2px solid var(--navy);
+}
+
+/* section label */
+.sl{
+  font-size:9px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--grey);
+  margin-bottom:16px;
+}
+
+
+/* ─────────────────────────────
+   PANEL 1 — Sidebar (dark)
+───────────────────────────── */
+.sidebar{
+  background:var(--navy);
+  flex:1;display:flex;flex-direction:column;
+}
+.sb-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 22px 20px;
+}
+.sb-wordmark{
+  font-size:9px;font-weight:600;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.sb-close{
+  background:none;border:none;cursor:pointer;
+  color:rgba(255,255,255,.3);padding:4px;display:flex;
+  transition:color .15s;
+}
+.sb-close:hover{color:rgba(255,255,255,.7);}
+.sb-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+
+.nav{flex:1;padding:0 10px;}
+.nav-item{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 12px;border-radius:12px;cursor:pointer;
+  font-size:14px;font-weight:400;color:rgba(255,255,255,.4);
+  transition:background .15s,color .15s;
+  margin-bottom:2px;
+}
+.nav-item:hover{color:rgba(255,255,255,.75);}
+.nav-item.active{color:#fff;background:rgba(255,255,255,.07);}
+.nav-item svg{
+  width:16px;height:16px;stroke:currentColor;fill:none;
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+}
+
+.sb-user{
+  padding:16px 22px 24px;
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;gap:12px;
+}
+.sb-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sb-name{font-size:13px;font-weight:500;color:#fff;}
+.sb-id{font-size:10px;color:rgba(255,255,255,.3);font-weight:300;margin-top:1px;}
+.sb-bal{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-left:auto;}
+
+
+/* ─────────────────────────────
+   PANEL 2 — Mobile Drawer
+───────────────────────────── */
+.drw-head{
+  display:flex;align-items:center;gap:12px;
+  padding:24px 22px 20px;
+}
+.drw-avatar{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--gl);border:1.5px solid var(--border);
+  font-size:13px;font-weight:600;color:var(--gd);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.drw-name{font-size:14px;font-weight:600;color:var(--gd);}
+.drw-bal{font-size:11px;color:var(--accent);font-weight:500;margin-top:2px;}
+.drw-x{
+  margin-left:auto;background:none;border:none;cursor:pointer;
+  color:var(--grey);padding:4px;display:flex;
+}
+.drw-x svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+
+.drw-ov{
+  font-family:var(--serif);font-size:30px;font-weight:600;font-style:italic;
+  color:var(--gd);padding:0 22px 20px;
+}
+.drw-menu{flex:1;}
+.drw-item{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 22px;cursor:pointer;
+  font-size:14px;font-weight:400;color:var(--gd);
+  transition:background .15s;
+}
+.drw-item:hover{background:var(--gl);}
+.drw-item svg{
+  width:16px;height:16px;stroke:var(--grey);fill:none;
+  stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+}
+.drw-foot{
+  padding:18px 22px 28px;
+}
+.drw-help{font-size:11px;color:var(--grey);font-weight:300;margin-bottom:10px;}
+.drw-logout{
+  background:none;border:none;cursor:pointer;
+  font-size:13px;font-weight:500;color:#EF4444;padding:0;
+}
+.drw-wm{
+  font-size:8px;font-weight:600;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--border);margin-top:16px;
+}
+
+
+/* ─────────────────────────────
+   PANEL 3 — Cloud Files
+───────────────────────────── */
+.cloud-tabs{
+  display:flex;gap:8px;padding:0 22px;margin-bottom:20px;
+}
+.ctab{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:9999px;
+  font-size:12px;font-weight:500;cursor:pointer;
+  border:1.5px solid var(--border);
+  transition:all .15s;
+}
+.ctab.on{background:var(--gd);color:#fff;border-color:var(--gd);}
+.ctab:not(.on){color:var(--grey-mid);}
+.ctab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+.frow{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 22px;cursor:pointer;
+  transition:background .15s;
+}
+.frow:hover{background:var(--gl);}
+.frow.sel{background:#F5F7FF;}
+
+.fcheck{
+  width:18px;height:18px;border-radius:5px;
+  border:1.5px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.fcheck.on{background:var(--accent);border-color:var(--accent);}
+.fcheck svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+
+.ficon{
+  width:34px;height:38px;border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  flex-shrink:0;
+}
+.ficon svg{width:15px;height:15px;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+.fext{font-size:7px;font-weight:700;letter-spacing:.04em;}
+
+.fname{font-size:13px;font-weight:500;color:var(--gd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fmeta{font-size:10px;color:var(--grey);font-weight:300;margin-top:2px;}
+
+
+/* ─────────────────────────────
+   PANEL 4 — Cloud Empty
+───────────────────────────── */
+.empty-wrap{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:0 28px 20px;text-align:center;
+}
+.empty-ill{width:100px;height:86px;margin-bottom:24px;}
+.empty-h{
+  font-family:var(--serif);font-size:22px;font-weight:600;
+  color:var(--gd);margin-bottom:8px;line-height:1.2;
+}
+.empty-p{font-size:12px;color:var(--grey);font-weight:300;line-height:1.7;max-width:190px;margin-bottom:24px;}
+.conn-btn{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:12px;padding:13px 16px;
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--gd);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:border-color .15s;margin-bottom:10px;
+}
+.conn-btn:hover{border-color:var(--accent);}
+
+
+/* ─────────────────────────────
+   PANEL 5 — Print Activity
+───────────────────────────── */
+.act-head{padding:24px 22px 0;flex-shrink:0;}
+.act-bc{
+  display:flex;align-items:center;gap:4px;
+  font-size:11px;color:var(--grey);margin-bottom:8px;cursor:pointer;
+}
+.act-bc svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.act-title{font-family:var(--serif);font-size:28px;font-weight:600;color:var(--gd);}
+
+.arec{padding:16px 22px;border-bottom:1px solid var(--border);}
+.arec:last-child{border-bottom:none;}
+
+.arec-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
+.arec-name{font-size:13px;font-weight:600;color:var(--gd);line-height:1.3;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.badge{
+  border-radius:9999px;padding:3px 9px;
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  white-space:nowrap;flex-shrink:0;
+}
+.badge.done{background:var(--green-s);color:var(--green);}
+.badge.proc{background:var(--amber-s);color:var(--amber);}
+
+.arec-when{font-size:10px;color:var(--grey);font-weight:300;margin-bottom:10px;}
+.arec-stats{display:flex;gap:0;}
+.astat{flex:1;}
+.astat-l{font-size:8px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);margin-bottom:3px;}
+.astat-v{font-size:12px;font-weight:600;color:var(--gd);}
+.astat-v.amt{font-family:var(--serif);font-size:15px;}
+</style>
+</head>
+<body>
+
+<!-- ══ PANEL 1 — Sidebar ══ -->
+<div>
+<div class="stag">Desktop Sidebar</div>
+<div class="phone wide">
+<div class="sidebar">
+
+  <div class="sb-head">
+    <span class="sb-wordmark">Presidency University</span>
+    <button class="sb-close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Print History
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Cloud Documents
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Pricing
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </div>
+  </nav>
+
+  <div class="sb-user">
+    <div class="sb-avatar">AR</div>
+    <div>
+      <div class="sb-name">Aditi Roy</div>
+      <div class="sb-id">ID: 2024CS089</div>
+    </div>
+    <div class="sb-bal">₹142.50</div>
+  </div>
+
+</div>
+</div>
+</div>
+
+
+<!-- ══ PANEL 2 — Mobile Drawer ══ -->
+<div>
+<div class="stag">Mobile Drawer</div>
+<div class="phone">
+
+  <div class="drw-head">
+    <div class="drw-avatar">AS</div>
+    <div>
+      <div class="drw-name">Aaryan Sharma</div>
+      <div class="drw-bal">₹142.50</div>
+    </div>
+    <button class="drw-x"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+
+  <div class="drw-ov">Overview</div>
+
+  <div class="drw-menu">
+    <div class="drw-item">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      My Print Jobs
+    </div>
+    <div class="drw-item">
+      <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Kiosk Map
+    </div>
+    <div class="drw-item">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Top up Credits
+    </div>
+    <div class="drw-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Preferences
+    </div>
+  </div>
+
+  <div class="drw-foot">
+    <div class="drw-help">Help &amp; Support</div>
+    <button class="drw-logout">Log Out</button>
+    <div class="drw-wm">Presidency University</div>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══ PANEL 3 — Cloud Files ══ -->
+<div>
+<div class="stag">Cloud Files — Populated</div>
+<div class="phone">
+
+  <div class="tbar">
+    <button class="back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="tbar-label">Step 02 / Upload</span>
+  </div>
+
+  <div style="padding:0 22px 16px;">
+    <h1 style="font-family:var(--serif);font-size:26px;font-weight:600;color:var(--gd);margin-bottom:4px;">Cloud Files</h1>
+    <p style="font-size:12px;color:var(--grey);font-weight:300;">Select documents to queue for printing.</p>
+  </div>
+
+  <div class="cloud-tabs">
+    <button class="ctab on">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Google Drive
+    </button>
+    <button class="ctab">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Dropbox
+    </button>
+  </div>
+
+  <div style="padding:0 22px;margin-bottom:12px;" class="sl">Recent Documents</div>
+
+  <div class="body">
+    <div class="frow sel">
+      <div class="fcheck on"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ficon" style="background:#EEF2FF;">
+        <svg viewBox="0 0 24 24" style="stroke:var(--accent);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="fext" style="color:var(--accent);">PDF</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="fname">Thesis_Draft_v2.pdf</div>
+        <div class="fmeta">2.4 MB · Oct 12</div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fcheck"></div>
+      <div class="ficon" style="background:var(--gl);">
+        <svg viewBox="0 0 24 24" style="stroke:var(--grey);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="fext" style="color:var(--grey);">DOC</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="fname">Assignment_History_101.docx</div>
+        <div class="fmeta">840 KB · Oct 11</div>
+      </div>
+    </div>
+
+    <div class="frow sel">
+      <div class="fcheck on"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="ficon" style="background:#FFF7ED;">
+        <svg viewBox="0 0 24 24" style="stroke:#F97316;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span class="fext" style="color:#F97316;">JPG</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="fname">ID_Card_Scan_Front.jpg</div>
+        <div class="fmeta">4.2 MB · Oct 10</div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fcheck"></div>
+      <div class="ficon" style="background:var(--gl);">
+        <svg viewBox="0 0 24 24" style="stroke:var(--grey);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="fext" style="color:var(--grey);">PDF</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="fname">Reading_List_Week_5.pdf</div>
+        <div class="fmeta">1.1 MB · Oct 09</div>
+      </div>
+    </div>
+
+    <div class="frow">
+      <div class="fcheck"></div>
+      <div class="ficon" style="background:var(--gl);">
+        <svg viewBox="0 0 24 24" style="stroke:var(--grey);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="fext" style="color:var(--grey);">DOC</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="fname">Lab_Report_Final.docx</div>
+        <div class="fmeta">2.8 MB · Oct 08</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bbar">
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button class="bbar-pill">
+      <span class="pill-badge">2 Selected</span>
+      Queue for Printing
+    </button>
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══ PANEL 4 — Cloud Empty ══ -->
+<div>
+<div class="stag">Cloud Files — Empty</div>
+<div class="phone">
+
+  <div class="tbar">
+    <button class="back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <span class="tbar-title" style="font-size:16px;">CampusPrint</span>
+  </div>
+
+  <div class="empty-wrap">
+    <svg class="empty-ill" viewBox="0 0 100 86" fill="none">
+      <ellipse cx="68" cy="24" rx="22" ry="20" fill="#EEF2FF" opacity=".8"/>
+      <ellipse cx="38" cy="46" rx="30" ry="24" fill="#EEF2FF" opacity=".5"/>
+      <path d="M64 52H36a14 14 0 0 1-2.6-27.7A18 18 0 0 1 68 36h2a10 10 0 0 1-6 16z"
+        stroke="#2B4EAA" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M50 52 Q49 60 47 65" stroke="#2B4EAA" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M44 65 Q47 67 50 65" stroke="#2B4EAA" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+
+    <h2 class="empty-h">No cloud documents<br/>linked yet</h2>
+    <p class="empty-p">Connect your storage to print documents directly from the cloud.</p>
+
+    <button class="conn-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66 2.84-.62-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
+      </svg>
+      Connect Google Drive
+    </button>
+
+    <button class="conn-btn">
+      <svg width="15" height="15" viewBox="0 0 32 32" fill="none">
+        <path d="M8 4L16 9 8 14 0 9Z" fill="#0061FF" transform="translate(2,2)"/>
+        <path d="M24 4L32 9 24 14 16 9Z" fill="#0061FF" transform="translate(-2,2)" opacity=".8"/>
+        <path d="M8 16L16 11 24 16 16 21Z" fill="#0061FF" transform="translate(0,2)" opacity=".7"/>
+      </svg>
+      Connect Dropbox
+    </button>
+  </div>
+
+  <div class="bbar">
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <button class="bbar-pill">Select Local File</button>
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></button>
+  </div>
+
+</div>
+</div>
+
+
+<!-- ══ PANEL 5 — Print Activity ══ -->
+<div>
+<div class="stag">Print Activity</div>
+<div class="phone">
+
+  <div class="act-head">
+    <div class="act-bc">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Dashboard
+    </div>
+    <div class="act-title">Print Activity</div>
+  </div>
+
+  <div style="padding:16px 22px 4px;" class="sl">Recent Records</div>
+
+  <div class="body">
+
+    <div class="arec">
+      <div class="arec-top">
+        <div class="arec-name">Thesis_Final_Draft_v2.pdf</div>
+        <span class="badge done">Completed</span>
+      </div>
+      <div class="arec-when">Today, 10:42 AM · Library Kiosk A4</div>
+      <div class="arec-stats">
+        <div class="astat"><div class="astat-l">Pages</div><div class="astat-v">42</div></div>
+        <div class="astat"><div class="astat-l">Type</div><div class="astat-v">B&amp;W Simplex</div></div>
+        <div class="astat" style="text-align:right;"><div class="astat-l">Total</div><div class="astat-v amt">₹ 84.00</div></div>
+      </div>
+    </div>
+
+    <div class="arec">
+      <div class="arec-top">
+        <div class="arec-name">Seminar_Poster_Color.jpg</div>
+        <span class="badge done">Completed</span>
+      </div>
+      <div class="arec-when">Yesterday, 4:15 PM · Student Union</div>
+      <div class="arec-stats">
+        <div class="astat"><div class="astat-l">Pages</div><div class="astat-v">1</div></div>
+        <div class="astat"><div class="astat-l">Type</div><div class="astat-v">Color Glossy</div></div>
+        <div class="astat" style="text-align:right;"><div class="astat-l">Total</div><div class="astat-v amt">₹ 25.00</div></div>
+      </div>
+    </div>
+
+    <div class="arec">
+      <div class="arec-top">
+        <div class="arec-name">Lab_Report_Week_8.docx</div>
+        <span class="badge done">Completed</span>
+      </div>
+      <div class="arec-when">12 Oct 2024, 09:20 AM · Faculty Block</div>
+      <div class="arec-stats">
+        <div class="astat"><div class="astat-l">Pages</div><div class="astat-v">12</div></div>
+        <div class="astat"><div class="astat-l">Type</div><div class="astat-v">B&amp;W Duplex</div></div>
+        <div class="astat" style="text-align:right;"><div class="astat-l">Total</div><div class="astat-v amt">₹ 21.00</div></div>
+      </div>
+    </div>
+
+    <div class="arec">
+      <div class="arec-top">
+        <div class="arec-name">Reading_List_Semester_1...</div>
+        <span class="badge proc">Processing</span>
+      </div>
+      <div class="arec-when">10 Oct 2024, 11:05 AM · Library Kiosk A1</div>
+      <div class="arec-stats">
+        <div class="astat"><div class="astat-l">Pages</div><div class="astat-v">—</div></div>
+        <div class="astat"><div class="astat-l">Type</div><div class="astat-v">B&amp;W Duplex</div></div>
+        <div class="astat" style="text-align:right;"><div class="astat-l">Total</div><div class="astat-v amt" style="color:var(--amber);">Pending</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bbar">
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <button class="bbar-pill">Start New Print</button>
+    <button class="bbar-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
+
+
+/* END OF SCREEN_6_PROFILE_CLOUD_ACTIVITY */
+══════════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION D — WHAT REMAINS TO BUILD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The following sections are NOT yet locked. Upload screenshots
+to continue. Say "lock" to finalize each.
+
+  🖥️  Kiosk Mode
+      - RFID welcome overlay
+      - Kiosk layout at 1080p
+      - Kiosk offline overlay
+      - Kiosk idle warning modal
+
+  🔔  Global / Shared Components
+      - Session timer (normal / warning / critical states)
+      - Progress stepper (inactive / active / completed)
+      - Toast notifications (success / error / info)
+      - Feature gate prompt
+      - Idle warning modal
+      - Confirm dialog
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF CAMPUSPRINT MASTER PROMPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
