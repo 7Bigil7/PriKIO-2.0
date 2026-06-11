@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { CostResult } from '@/lib/calculate-cost'
 import { usePrintStore } from '@/store/usePrintStore'
-import FilePreviewModal from '@/components/FilePreviewModal'
+import dynamic from 'next/dynamic'
+
+const FilePreviewModal = dynamic(() => import('@/components/FilePreviewModal'), { ssr: false })
 
 export default function PrintSettings() {
   const router = useRouter()
