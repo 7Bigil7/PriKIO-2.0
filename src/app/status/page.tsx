@@ -357,11 +357,16 @@ function StatusScreen() {
           @media (max-width: 639px) {
             .vk-left { display: none; }
             .vk-right {
-              background: #1a2340;
-              align-items: center; justify-content: center;
-              padding: 16px;
+              background: #fff;
+              padding: 0;
             }
-            .vk-card { max-width: 100%; }
+            .vk-card {
+              max-width: 100%;
+              max-height: 100vh;
+              height: 100vh;
+              border-radius: 0;
+              box-shadow: none;
+            }
           }
         `}</style>
 
@@ -385,19 +390,18 @@ function StatusScreen() {
             <div className="vk-card">
               <div className="vk-card-header">
                 <h2 className="vk-card-title">Your Print Code is Ready!</h2>
-                <p className="vk-card-sub">Use this QR code or OTP at any CampusPrint kiosk within 24 hours.</p>
+                <p className="vk-card-sub">Use this OTP at any CampusPrint kiosk within 24 hours.</p>
               </div>
               <div className="vk-card-body">
-                <div className="vk-qr-wrap">
-                  <div className={`vk-qr-box${expired ? " vk-qr-expired" : ""}`}>
-                    <div className="vk-qr-inner" />
+                <div className="vk-qr-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div className="vk-otp-digits" style={{ marginBottom: '16px' }}>
+                    {otpDigits.map((d, i) => <span className="vk-otp-digit" key={i} style={{ color: expired ? '#a0aec0' : '#1a2340' }}>{d}</span>)}
                   </div>
                   {!expired
                     ? <p className="vk-expires">Expires in <span className="vk-expires-time">{mins}:{secs}</span></p>
                     : <p className="vk-expired-label">EXPIRED</p>
                   }
                 </div>
-
                 {!expired ? (
                   <>
                     <button className="vk-btn-primary">
@@ -405,7 +409,7 @@ function StatusScreen() {
                       Download
                     </button>
                     <div className="vk-btn-row">
-                      <button className="vk-btn-ghost" onClick={() => setShowOTP(true)}>View OTP</button>
+                      <button className="vk-btn-ghost" onClick={handleCopy}>{copied ? "Copied!" : "Copy Code"}</button>
                       <button className="vk-btn-ghost">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         Share
@@ -417,7 +421,7 @@ function StatusScreen() {
                 )}
 
                 <p className="vk-steps-title">HOW TO PRINT AT THE KIOSK</p>
-                {["Go to the nearest CampusPrint kiosk.", "Scan QR or enter OTP on the screen.", "Collect your prints!"].map((s, i) => (
+                {["Go to the nearest CampusPrint kiosk.", "Enter this OTP on the screen.", "Collect your prints!"].map((s, i) => (
                   <div className="vk-step" key={i}>
                     <div className="vk-step-num">{i + 1}</div>
                     <p className="vk-step-text">{s}</p>
@@ -427,36 +431,6 @@ function StatusScreen() {
             </div>
           </div>
         </div>
-
-        {/* OTP Modal */}
-        {showOTP && (
-          <div className="vk-modal-overlay" onClick={() => setShowOTP(false)}>
-            <div className="vk-modal" onClick={e => e.stopPropagation()}>
-              <button className="vk-modal-close" onClick={() => setShowOTP(false)}>×</button>
-              <h3 className="vk-modal-title">OTP Code</h3>
-              <div className="vk-otp-digits">
-                {otpDigits.map((d, i) => <span className="vk-otp-digit" key={i} style={{ color: expired ? '#a0aec0' : '#1a2340' }}>{d}</span>)}
-              </div>
-              {expired && <p style={{textAlign: 'center', color: '#e53e3e', fontWeight: 700, fontSize: '13px', marginTop: '-8px', marginBottom: '12px'}}>EXPIRED</p>}
-              
-              {!expired ? (
-                <>
-                  <button className="vk-copy-btn" onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</button>
-                  <button className="vk-btn-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Download
-                  </button>
-                  <button className="vk-btn-wa">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                    Share via WhatsApp
-                  </button>
-                </>
-              ) : (
-                <button className="vk-btn-regen" onClick={() => generateOtp(printJobId!)}>Regenerate Code</button>
-              )}
-            </div>
-          </div>
-        )}
       </>
     )
   }

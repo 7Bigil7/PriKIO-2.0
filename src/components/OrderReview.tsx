@@ -242,66 +242,7 @@ export default function OrderReview({
             </div>
           </div>
 
-          {/* ── Personal & Shop Details ── */}
-          <div>
-            <h3 className="or-sec-heading">Personal & Shop Details</h3>
-            <div className="or-section">
 
-              {/* Phone */}
-              <div className="or-row">
-                {editPhone ? (
-                  <input
-                    className="or-phone-input"
-                    value={phoneVal}
-                    onChange={e => setPhoneVal(e.target.value)}
-                    onBlur={() => setEditPhone(false)}
-                    autoFocus
-                  />
-                ) : (
-                  <span style={{ fontWeight: 600, color: "#1a2340", fontSize: "0.9rem" }}>{phoneVal}</span>
-                )}
-                <button onClick={() => setEditPhone(true)} style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", padding: "2px" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-              </div>
-
-              {/* Kiosk info */}
-              <div style={{ padding: "12px 14px", borderBottom: "1px solid #f0f1f7" }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
-                      <span style={{ fontWeight: 700, color: "#1a2340", fontSize: "0.92rem" }}>{kioskName}</span>
-                      <span className={`or-tag ${kioskOpen ? "or-tag-open" : "or-tag-closed"}`}>
-                        {kioskOpen ? "Open" : "Closed"}
-                      </span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.8rem", color: "#888" }}>{kioskLoc}</p>
-                  </div>
-                  {/* Kiosk illustration */}
-                  <div style={{ width: "48px", height: "56px", flexShrink: 0, background: "#f0f1f7", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
-                      <rect x="4"  y="0"  width="20" height="28" rx="3" fill="#4a5fc1" opacity="0.15"/>
-                      <rect x="4"  y="0"  width="20" height="28" rx="3" stroke="#4a5fc1" strokeWidth="1.5"/>
-                      <rect x="8"  y="4"  width="12" height="8"  rx="1.5" fill="#4a5fc1" opacity="0.3"/>
-                      <rect x="8"  y="15" width="5"  height="5"  rx="1" fill="#4a5fc1" opacity="0.5"/>
-                      <rect x="15" y="15" width="5"  height="5"  rx="1" fill="#4a5fc1" opacity="0.5"/>
-                      <rect x="8"  y="22" width="12" height="3"  rx="1" fill="#4a5fc1" opacity="0.3"/>
-                      <rect x="10" y="28" width="8"  height="4"  rx="1" fill="#4a5fc1" opacity="0.2"/>
-                      <rect x="6"  y="32" width="16" height="4"  rx="2" fill="#4a5fc1" opacity="0.15"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Hours */}
-              <div className="or-row">
-                <span style={{ fontSize: "0.85rem", color: "#666", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-                  {kioskHours}
-                </span>
-              </div>
-            </div>
-          </div>
 
           {/* ── Order Summary ── */}
           <div>

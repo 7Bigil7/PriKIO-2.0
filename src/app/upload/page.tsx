@@ -339,11 +339,16 @@ export default function UploadScreen() {
         @media (max-width: 768px) {
           .up-left { display: none; }
           .up-right {
-            background: #1a2340;
-            align-items: center; justify-content: center;
-            padding: 16px;
+            background: #fff;
+            padding: 0;
           }
-          .up-card { max-width: 100%; max-height: 100%; border-radius: 16px; }
+          .up-card { 
+            max-width: 100%; 
+            max-height: 100vh; 
+            height: 100vh;
+            border-radius: 0; 
+            box-shadow: none;
+          }
         }
       `}</style>
 
@@ -353,7 +358,7 @@ export default function UploadScreen() {
           <div className="up-step">STEP 1 OF 3</div>
           <div className="up-left-icon">🖨️</div>
           <h1 className="up-left-title">Upload Your Files</h1>
-          <p className="up-left-sub">Select PDF, DOCX, JPG or PNG files. Set copies and color mode before continuing.</p>
+          <p className="up-left-sub">Select PDF, JPG or PNG files.</p>
           <div className="up-dots">
             <div className="up-dot active" />
             <div className="up-dot" />
@@ -374,7 +379,7 @@ export default function UploadScreen() {
             <div className="up-card-body">
               <input
                 ref={inputRef} type="file" multiple
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                accept=".pdf,.jpg,.jpeg,.png"
                 style={{ display: "none" }}
                 onChange={(e) => {
                   if (e.target.files) handleFiles(e.target.files)
@@ -423,15 +428,7 @@ export default function UploadScreen() {
                       <div className="up-file-info">
                         <div className="up-file-name">{f.name}</div>
                         <div className="up-file-meta">{f.size}</div>
-                        <div className="up-pages-row">
-                          <span className="up-pages-label">Pages:</span>
-                          <input
-                            className="up-pages-input"
-                            value={f.pagesToPrint}
-                            onChange={(e) => updatePages(f.id, e.target.value)}
-                            placeholder="e.g. 1-3, All"
-                          />
-                        </div>
+
                       </div>
                       <button className="up-remove" onClick={() => removeFile(f.id)}>×</button>
                     </div>
@@ -443,7 +440,10 @@ export default function UploadScreen() {
               )}
 
               <div className="up-hint">✓ Preview pages before you print</div>
-              <div className="up-formats">Accepted formats: PDF, DOCX, JPG, PNG. Max 100MB per file</div>
+              <div className="up-formats">Accepted formats: PDF, JPG, PNG. Max 100MB per file</div>
+              <div style={{ fontSize: '11px', color: '#dc2626', background: '#fef2f2', padding: '8px 12px', borderRadius: '8px', marginTop: '12px', border: '1px solid #fecaca', lineHeight: '1.4' }}>
+                <strong>Printing a Word Doc?</strong> Please Save As/Export as a PDF first to ensure your formatting doesn't change!
+              </div>
             </div>
 
             {/* Footer */}

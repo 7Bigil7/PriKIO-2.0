@@ -25,7 +25,34 @@ export default function PrintSettingsCard({
   const [copies,       setCopies]       = useState(1);
 
   // ── cost calculation ──────────────────────────────────────────────────────
-  const totalFilePages = files.reduce((acc, f) => acc + f.pageCount, 0);
+  const parsePagesToPrint = (pagesStr: string, totalPages: number) => {
+    if (!pagesStr || pagesStr.toLowerCase().trim() === 'all') return totalPages;
+    try {
+      const parts = pagesStr.split(',');
+      let count = 0;
+      for (const part of parts) {
+        if (part.includes('-')) {
+          const [start, end] = part.split('-').map(s => parseInt(s.trim()));
+          if (!isNaN(start) && !isNaN(end) && end >= start) {
+            count += (end - start + 1);
+          }
+        } else {
+          const num = parseInt(part.trim());
+          if (!isNaN(num)) count += 1;
+        }
+      }
+      return count > 0 ? count : totalPages;
+    } catch {
+      return totalPages;
+    }
+  };
+
+  const totalFilePages = files.reduce((acc, f) => {
+    // files might have pagesToPrint from Step 1, or default to "All"
+    const pagesToPrint = (f as any).pagesToPrint || "All";
+    return acc + parsePagesToPrint(pagesToPrint, f.pageCount);
+  }, 0);
+
   const pagesPerSheet  = layout === "duplex" ? 2 : 1;
   const sheetsNeeded   = Math.ceil(totalFilePages / pagesPerSheet);
   const pricePerSheet  = colorMode === "bw" ? PRICE.bw : PRICE.color;
@@ -218,7 +245,11 @@ export default function PrintSettingsCard({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 600, color: "#1a2340", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.fileName}</p>
-                    <p style={{ margin: 0, fontSize: "0.75rem", color: "#aaa", marginTop: "2px" }}>{file.pageCount} Pages · {parseFloat(file.fileSizeMb || '0').toFixed(2)} MB</p>
+                    <p style={{ margin: 0, fontSize: "0.75rem", color: "#aaa", marginTop: "2px" }}>
+                      {(file as any).pagesToPrint && (file as any).pagesToPrint !== "All"
+                        ? `Selected: ${(file as any).pagesToPrint} (${file.pageCount} Total Pages)`
+                        : `${file.pageCount} Pages`} · {parseFloat(file.fileSizeMb || '0').toFixed(2)} MB
+                    </p>
                   </div>
                   {/* eye icon — preview */}
                   <button onClick={() => onPreviewClick(file.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", padding: "4px" }}>
@@ -313,7 +344,6 @@ export default function PrintSettingsCard({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <p className="sec-label" style={{ margin: 0 }}>Number of Copies</p>
-              <p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "#aaa" }}>{copies} cop{copies === 1 ? "y" : "ies"} × {sheetsNeeded} sheet{sheetsNeeded !== 1 ? "s" : ""}</p>
             </div>
             <div className="stepper">
               <button className="stepper-btn" onClick={() => setCopies(c => Math.max(1, c - 1))}>−</button>
@@ -326,17 +356,9 @@ export default function PrintSettingsCard({
 
         {/* ── Cost summary + CTA ── */}
         <div style={{ padding: "1rem 1.5rem 1.5rem", borderTop: "1px solid #f0f1f7" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#888", marginBottom: "4px" }}>
-            <span>{sheetLabel}</span>
-            <span>₹ {printCost.toFixed(2)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#888", marginBottom: "12px" }}>
-            <span>Service Fee</span>
-            <span>₹ {PRICE.serviceFee.toFixed(2)}</span>
-          </div>
+
           <button className="confirm-btn" onClick={handleConfirm}>
             Confirm & Pay
-            <span className="confirm-badge">₹ {totalCost.toFixed(2)}</span>
           </button>
         </div>
 
