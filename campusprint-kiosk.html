@@ -28,12 +28,12 @@
         body {
             background: var(--body-bg);
             margin: 0;
-            padding: 40px;
+            padding: 20px;
             font-family: 'DM Sans', sans-serif;
             display: flex;
             flex-direction: column;
-            gap: 40px;
             align-items: center;
+            overflow-x: hidden;
         }
 
         /* 1080p frame wrapper */
@@ -46,8 +46,7 @@
             box-shadow: 0 40px 100px rgba(0,0,0,0.1);
             border-radius: 24px;
             transform-origin: top center;
-            /* Zoom out slightly for preview purposes */
-            zoom: 0.6; 
+            flex-shrink: 0;
         }
 
         /* Typography */
@@ -433,5 +432,24 @@
         </div>
     </div>
 
+    <script>
+        function updateScale() {
+            const screens = document.querySelectorAll('.kiosk-screen');
+            // Add some padding to the sides (40px total)
+            const availableWidth = window.innerWidth - 40;
+            const scale = Math.min(1, availableWidth / 1920);
+            
+            screens.forEach(screen => {
+                screen.style.transform = `scale(${scale})`;
+                // Adjust margin-bottom so scaled elements don't leave huge gaps
+                const scaledHeight = 1080 * scale;
+                const marginAdjustment = 1080 - scaledHeight;
+                screen.style.marginBottom = `-${marginAdjustment - 40}px`; // 40px visible gap
+            });
+        }
+        
+        window.addEventListener('resize', updateScale);
+        updateScale(); // Initial call
+    </script>
 </body>
 </html>
