@@ -1144,11 +1144,6 @@ html { scroll-behavior: smooth; }
   }
 
 /* ─── OTP / VERIFY KIOSK FIXES ─── */
-body, html {
-  overflow: hidden !important;
-  height: 100% !important;
-}
-
 @media (min-width: 769px) {
   .status-layout,
   .otp-page,

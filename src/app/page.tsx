@@ -1,12 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import './desktop-landing.css'
 
 export default function LandingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible')
+        }
+      })
+    }, { threshold: 0.1 })
+
+    const elements = document.querySelectorAll('.reveal')
+    elements.forEach(el => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [])
 
   const handleSignIn = () => {
     setLoading(true)

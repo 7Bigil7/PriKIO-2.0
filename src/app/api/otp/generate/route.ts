@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     // Return dummy OTP
     return NextResponse.json({
       data: {
-        otp: '123456',
+        otp: '6473',
         expiresAt: new Date(Date.now() + 120000).toISOString()
       }
     })

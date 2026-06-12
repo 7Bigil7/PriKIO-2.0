@@ -1,142 +1,49 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef } from "react"
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
-import { createClient } from '@/lib/supabase/client'
 import { usePrintStore } from '@/store/usePrintStore'
 
-interface FileItem {
-  id: string;
-  file: File;
-  pagesToPrint: string;
-}
-
-export default function Upload() {
-  const { profile } = useAuth()
+export default function UploadScreen() {
   const router = useRouter()
-  const [files, setFiles] = useState<FileItem[]>([])
+  const [files, setFiles] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [dragActive, setDragActive] = useState(false)
-  
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click()
+  const handleFiles = (incoming: FileList | File[]) => {
+    const arr = Array.from(incoming).map((f) => ({
+      id: Math.random().toString(36).slice(2),
+      file: f,
+      name: f.name,
+      size: (f.size / 1024 / 1024).toFixed(2) + " MB",
+      pagesToPrint: "All",
+    }))
+    setFiles((prev) => [...prev, ...arr])
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      addFiles(Array.from(e.target.files))
-    }
-  }
+  const removeFile = (id: string) =>
+    setFiles((prev) => prev.filter((f) => f.id !== id))
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragActive(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setDragActive(false)
-  }
+  const updatePages = (id: string, val: string) =>
+    setFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, pagesToPrint: val } : f))
+    )
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
-    setDragActive(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      addFiles(Array.from(e.dataTransfer.files))
+      handleFiles(e.dataTransfer.files)
     }
-  }
-
-  const addFiles = (selectedFiles: File[]) => {
-    const validFiles = selectedFiles.filter(f => {
-      if (f.size > 50 * 1024 * 1024) {
-        setError('One or more files are too large. Maximum size is 50MB per file.')
-        return false
-      }
-      return true
-    })
-
-    const newItems = validFiles.map(f => ({
-      id: Math.random().toString(36).substring(7),
-      file: f,
-      pagesToPrint: 'All'
-    }))
-
-    setFiles(prev => [...prev, ...newItems])
-    setError(null)
-  }
-
-  const removeFile = (id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id))
-  }
-
-  const updatePagesToPrint = (id: string, val: string) => {
-    setFiles(prev => prev.map(f => f.id === id ? { ...f, pagesToPrint: val } : f))
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const getFileIcon = (fileName: string) => {
-    const ext = fileName.split('.').pop()?.toLowerCase()
-    if (ext === 'pdf') {
-      return (
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--red)' }}>
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <path d="M10 9H8"></path>
-          <path d="M16 13H8"></path>
-          <path d="M16 17H8"></path>
-        </svg>
-      )
-    }
-    if (ext === 'doc' || ext === 'docx') {
-      return (
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <path d="M8 13h8"></path>
-          <path d="M8 17h8"></path>
-          <path d="M8 9h2"></path>
-        </svg>
-      )
-    }
-    if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
-      return (
-        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--green)' }}>
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-          <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>
-      )
-    }
-    return (
-      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--grey)' }}>
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-      </svg>
-    )
   }
 
   const handleContinue = async () => {
     if (files.length === 0) return
-    
     setUploading(true)
-    setError(null)
     setUploadProgress(0)
 
     try {
       const results = []
-      
       for (let i = 0; i < files.length; i++) {
         const item = files[i]
         const formData = new FormData()
@@ -158,10 +65,7 @@ export default function Upload() {
         setUploadProgress(fileProgressBase + fileProgressStep)
 
         const result = await response.json()
-
-        if (!response.ok) {
-          throw new Error(result.error || `Upload failed for ${item.file.name}`)
-        }
+        if (!response.ok) throw new Error(result.error)
 
         results.push({ 
           id: Math.random().toString(36).substring(7),
@@ -174,269 +78,400 @@ export default function Upload() {
       setUploadProgress(100)
       usePrintStore.getState().setFiles(results)
       
+      // We don't save copies/colorMode here anymore since it's removed.
+      // We just push to the next step.
       setTimeout(() => {
         router.push('/print-settings')
       }, 500)
 
     } catch (err: any) {
-      setError(err.message)
+      console.error(err)
       setUploading(false)
     }
   }
 
   return (
-    <div className="page-root">
-      {/* Desktop left branding panel */}
-      <div className="desktop-left-panel">
-        <div className="dlp-step-pill">Step 1 of 3</div>
-        <svg className="dlp-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 36V16h24v20" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M8 36h32" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M20 16V8h8v8" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
-          <polyline points="24 22 24 30" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/>
-          <polyline points="20 26 24 22 28 26" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        <h2 className="dlp-heading">Upload Your Document</h2>
-        <p className="dlp-sub">Supports PDF, JPEG, PNG, DOCX up to 20MB. Drag and drop or click to browse.</p>
-        <hr className="dlp-divider" />
-        <div className="dlp-dots">
-          <span className="dlp-dot active"></span>
-          <span className="dlp-dot"></span>
-          <span className="dlp-dot"></span>
-        </div>
-      </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Quicksand:wght@400;500;600;700&display=swap');
+        
+        .up-root {
+          height: 100vh; width: 100vw;
+          display: flex; overflow: hidden;
+          font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #1a2340;
+        }
+        
+        .up-root * {
+          font-family: inherit;
+        }
 
-      <div className="desktop-right-panel">
-        <div className="screen-tag">Step 1 — Upload</div>
-        <div className="phone-card" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-          <div className="top-bar" style={{ flexShrink: 0 }}>
-            <button className="back-btn" aria-label="Back" onClick={() => router.back()}>
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <span className="screen-title">CampusPrint</span>
+        /* Left panel */
+        .up-left {
+          width: 45%; background: #1a2340;
+          display: flex; flex-direction: column;
+          justify-content: center;
+          padding: clamp(32px,5vw,72px); flex-shrink: 0;
+        }
+        .up-step {
+          display: inline-flex; align-items: center;
+          background: rgba(255,255,255,0.08); border-radius: 20px;
+          padding: 6px 14px; font-size: 11px; font-weight: 700;
+          letter-spacing: 0.1em; color: #a0aec0;
+          margin-bottom: 40px; width: fit-content;
+        }
+        .up-left-icon { font-size: 32px; margin-bottom: 20px; opacity: 0.7; }
+        .up-left-title {
+          font-family: 'Playfair Display', serif !important;
+          font-size: clamp(28px,3.5vw,42px); color: #fff;
+          margin-bottom: 16px; line-height: 1.2;
+        }
+        .up-left-sub { font-size: 15px; color: #8892a4; line-height: 1.6; max-width: 280px; }
+        .up-dots { display: flex; gap: 8px; margin-top: 48px; }
+        .up-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+        .up-dot.active { background: #4a5fc1; }
+
+        /* Right panel */
+        .up-right {
+          flex: 1; background: #f0f2f5;
+          display: flex; align-items: center; justify-content: center;
+          padding: clamp(16px,3vw,40px); overflow: hidden;
+        }
+
+        /* Card */
+        .up-card {
+          background: #fff; border-radius: 20px;
+          width: 100%; max-width: 400px;
+          display: flex; flex-direction: column;
+          overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+          max-height: calc(100vh - 80px);
+        }
+
+        /* Card header */
+        .up-card-header {
+          display: flex; align-items: center;
+          padding: 20px 20px 0; flex-shrink: 0;
+        }
+        .up-back {
+          background: none; border: none; font-size: 20px;
+          color: #1a2340; cursor: pointer; padding: 4px 8px 4px 0;
+        }
+        .up-card-title {
+          flex: 1; text-align: center;
+          font-family: 'Playfair Display', serif !important;
+          font-style: italic; font-size: 20px; color: #1a2340;
+          margin-right: 28px;
+        }
+
+        /* Scrollable body */
+        .up-card-body {
+          flex: 1; overflow-y: auto; padding: 20px 20px 0;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        /* Empty Dropzone / Illustration */
+        .up-dropzone {
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          padding: 30px 20px; text-align: center;
+        }
+        .up-headline {
+          font-family: 'Playfair Display', serif !important;
+          font-size: 28px; font-weight: 600; color: #1a2340;
+          margin: 20px 0 12px; line-height: 1.2;
+        }
+        .up-subline {
+          font-size: 14px; color: #8892a4; line-height: 1.5;
+          max-width: 260px; margin-bottom: 24px;
+        }
+        .up-select-btn {
+          background: #EEF2FF; color: #2B4EAA;
+          border: none; padding: 12px 24px; border-radius: 50px;
+          font-size: 15px; font-weight: 700; cursor: pointer;
+          display: inline-flex; align-items: center; gap: 8px;
+          transition: background 0.2s, transform 0.1s;
+        }
+        .up-select-btn:hover { background: #e0e7ff; transform: scale(1.02); }
+
+        .up-hint {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 12px; color: #22c55e; margin-bottom: 8px;
+        }
+        .up-formats { font-size: 11px; color: #a0aec0; margin-bottom: 20px; }
+
+        /* Add more (compact) */
+        .up-add-more {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 12px 16px; border-radius: 12px;
+          border: 1.5px dashed #cbd5e1; cursor: pointer;
+          font-size: 14px; color: #2B4EAA; font-weight: 700;
+          margin-bottom: 16px; background: #fff; width: max-content;
+          transition: border-color 0.2s;
+        }
+        .up-add-more:hover { border-color: #2B4EAA; }
+
+        /* File cards */
+        .up-file-card {
+          background: #fff; border-radius: 16px;
+          padding: 16px; margin-bottom: 12px;
+          display: flex; align-items: flex-start; gap: 14px;
+          border: 1.5px solid #e2e8f0; position: relative;
+        }
+        .up-file-icon {
+          width: 44px; height: 44px; border-radius: 10px;
+          background: #f1f5f9; display: flex;
+          align-items: center; justify-content: center;
+          font-size: 20px; flex-shrink: 0;
+        }
+        .up-file-info { flex: 1; min-width: 0; padding-right: 20px; }
+        .up-file-name {
+          font-size: 14px; font-weight: 700; color: #1a2340;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          margin-bottom: 4px;
+        }
+        .up-file-meta { font-size: 12px; color: #8892a4; margin-bottom: 12px; font-weight: 500; }
+        .up-pages-row {
+          display: flex; align-items: center; gap: 8px;
+        }
+        .up-pages-label { font-size: 12px; color: #8892a4; font-weight: 500; }
+        .up-pages-input {
+          width: 60px; padding: 4px 8px; border-radius: 6px;
+          border: 1.5px solid #e2e8f0; font-size: 13px; font-weight: 600;
+          color: #1a2340; outline: none; background: #fff; text-align: center;
+        }
+        .up-pages-input:focus { border-color: #4a5fc1; }
+        .up-remove {
+          background: none; border: none; cursor: pointer;
+          color: #cbd5e1; font-size: 20px; padding: 4px;
+          position: absolute; top: 12px; right: 12px;
+          line-height: 1; transition: color 0.2s;
+        }
+        .up-remove:hover { color: #e53e3e; }
+
+        /* Settings rows */
+        .up-settings { margin-bottom: 8px; }
+        .up-setting-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 0; border-bottom: 1px solid #f0f2f5;
+          cursor: pointer;
+        }
+        .up-setting-row:last-child { border-bottom: none; }
+        .up-setting-label { font-size: 14px; color: #4a5568; }
+        .up-setting-val {
+          font-size: 14px; font-weight: 600; color: #1a2340;
+          display: flex; align-items: center; gap: 4px;
+        }
+        .up-chevron { font-size: 12px; color: #a0aec0; }
+
+        /* Footer */
+        .up-footer { padding: 14px 20px 20px; flex-shrink: 0; }
+        .up-btn-upload {
+          width: 100%; padding: 15px; border-radius: 50px;
+          background: #1a2340;
+          color: #fff; border: none; font-size: 15px; font-weight: 600;
+          cursor: pointer; opacity: 0.35; transition: opacity 0.2s;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .up-btn-upload.active { opacity: 1; }
+        .up-badge {
+          background: #4a5fc1; color: #fff;
+          border-radius: 20px; padding: 2px 10px;
+          font-size: 12px; font-weight: 700;
+        }
+
+        /* Modal */
+        .up-modal-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+          display: flex; align-items: flex-end; justify-content: center;
+          z-index: 200;
+        }
+        @media (min-width: 640px) {
+          .up-modal-overlay { align-items: center; }
+          .up-modal { border-radius: 20px !important; max-width: 340px; }
+        }
+        .up-modal {
+          background: #fff; border-radius: 20px 20px 0 0;
+          padding: 24px; width: 100%;
+          animation: modalUp 0.25s ease;
+        }
+        @keyframes modalUp {
+          from { transform: translateY(40px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        .up-modal-title {
+          font-size: 16px; font-weight: 700; color: #1a2340;
+          margin-bottom: 16px; text-align: center;
+        }
+        .up-modal-option {
+          width: 100%; padding: 13px; border-radius: 10px;
+          border: 1.5px solid #e2e8f0; background: #fff;
+          font-size: 14px; color: #1a2340; cursor: pointer;
+          margin-bottom: 8px; text-align: left;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .up-modal-option.selected {
+          border-color: #4a5fc1; background: #eef0fb;
+          font-weight: 600; color: #4a5fc1;
+        }
+        .up-modal-close {
+          width: 100%; padding: 13px; border-radius: 50px;
+          background: #1a2340; color: #fff; border: none;
+          font-size: 14px; font-weight: 600; cursor: pointer;
+          margin-top: 8px;
+        }
+
+        /* Copies counter */
+        .up-counter {
+          display: flex; align-items: center;
+          justify-content: center; gap: 24px; margin-bottom: 20px;
+        }
+        .up-counter-btn {
+          width: 40px; height: 40px; border-radius: 50%;
+          border: 1.5px solid #d1d5db; background: #fff;
+          font-size: 22px; cursor: pointer; display: flex;
+          align-items: center; justify-content: center;
+          color: #1a2340; transition: border-color 0.15s;
+        }
+        .up-counter-btn:hover { border-color: #4a5fc1; }
+        .up-counter-val { font-size: 28px; font-weight: 700; color: #1a2340; min-width: 32px; text-align: center; }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+          .up-left { display: none; }
+          .up-right {
+            background: #1a2340;
+            align-items: center; justify-content: center;
+            padding: 16px;
+          }
+          .up-card { max-width: 100%; max-height: 100%; border-radius: 16px; }
+        }
+      `}</style>
+
+      <div className="up-root" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
+        {/* Left panel */}
+        <div className="up-left">
+          <div className="up-step">STEP 1 OF 3</div>
+          <div className="up-left-icon">🖨️</div>
+          <h1 className="up-left-title">Upload Your Files</h1>
+          <p className="up-left-sub">Select PDF, DOCX, JPG or PNG files. Set copies and color mode before continuing.</p>
+          <div className="up-dots">
+            <div className="up-dot active" />
+            <div className="up-dot" />
+            <div className="up-dot" />
           </div>
+        </div>
 
-          <div 
-            className={`upload-center drop-zone ${dragActive ? 'drag-active' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            style={{ 
-              flex: 1, 
-              overflowY: 'auto', 
-              WebkitOverflowScrolling: 'touch', 
-              transition: 'all 0.3s ease', 
-              border: dragActive ? '2px dashed var(--accent)' : (files.length === 0 ? '2px dashed transparent' : 'none'), 
-              borderRadius: '24px',
-              padding: files.length > 0 ? '20px' : undefined,
-              justifyContent: files.length > 0 ? 'flex-start' : 'center',
-            }}
-          >
-            {files.length === 0 ? (
-              <>
-                <svg className="upload-illustration" viewBox="0 0 140 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '60%', maxWidth: '220px', height: 'auto', display: 'block', margin: '0 auto' }}>
-                  <g transform="rotate(-12, 110, 28)">
-                    <rect x="97" y="10" width="28" height="36" rx="3" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.4"/>
-                    <line x1="103" y1="20" x2="119" y2="20" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
-                    <line x1="103" y1="26" x2="119" y2="26" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
-                    <line x1="103" y1="32" x2="112" y2="32" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
-                  </g>
-                  <g transform="rotate(8, 20, 85)">
-                    <rect x="10" y="72" width="24" height="30" rx="3" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.3" strokeDasharray="3 2"/>
-                    <line x1="16" y1="80" x2="28" y2="80" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
-                    <line x1="16" y1="86" x2="28" y2="86" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
-                  </g>
-                  <rect x="24" y="46" width="92" height="42" rx="10" fill="#EEF2FF" stroke="#2B4EAA" strokeWidth="1.8"/>
-                  <rect x="38" y="36" width="64" height="16" rx="5" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.5"/>
-                  <rect x="44" y="82" width="52" height="13" rx="3" fill="#fff" stroke="#2B4EAA" strokeWidth="1.5"/>
-                  <circle cx="96" cy="61" r="3" fill="#2B4EAA" opacity="0.7"/>
-                  <circle cx="106" cy="61" r="3" fill="#E5E7EB"/>
-                  <line x1="38" y1="70" x2="102" y2="70" stroke="#2B4EAA" strokeWidth="1" strokeLinecap="round" opacity="0.25"/>
-                </svg>
+        {/* Right panel */}
+        <div className="up-right">
+          <div className="up-card">
+            {/* Header */}
+            <div className="up-card-header">
+              <button className="up-back" onClick={() => router.back()}>‹</button>
+              <span className="up-card-title">CampusPrint</span>
+            </div>
 
-                <h1 className="upload-headline">Ready to print?</h1>
-                <p className="upload-sub">Upload your documents to get started with high-quality campus printing.</p>
-                <div style={{ marginTop: '24px' }}>
-                  <button 
-                    onClick={handleUploadClick}
-                    style={{
-                      background: 'var(--accent-s)',
-                      color: 'var(--accent)',
-                      border: 'none',
-                      padding: '12px 24px',
-                      borderRadius: '9999px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
+            {/* Body */}
+            <div className="up-card-body">
+              <input
+                ref={inputRef} type="file" multiple
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  if (e.target.files) handleFiles(e.target.files)
+                }}
+              />
+
+              {files.length === 0 ? (
+                /* Empty state */
+                <div className="up-dropzone">
+                  <svg viewBox="0 0 140 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', maxWidth: '200px', height: 'auto', display: 'block', margin: '0 auto' }}>
+                    <g transform="rotate(-12, 110, 28)">
+                      <rect x="97" y="10" width="28" height="36" rx="3" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.4"/>
+                      <line x1="103" y1="20" x2="119" y2="20" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
+                      <line x1="103" y1="26" x2="119" y2="26" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
+                      <line x1="103" y1="32" x2="112" y2="32" stroke="#D1D5DB" strokeWidth="1.2" strokeLinecap="round"/>
+                    </g>
+                    <g transform="rotate(8, 20, 85)">
+                      <rect x="10" y="72" width="24" height="30" rx="3" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.3" strokeDasharray="3 2"/>
+                      <line x1="16" y1="80" x2="28" y2="80" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
+                      <line x1="16" y1="86" x2="28" y2="86" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
+                    </g>
+                    <rect x="24" y="46" width="92" height="42" rx="10" fill="#EEF2FF" stroke="#2B4EAA" strokeWidth="1.8"/>
+                    <rect x="38" y="36" width="64" height="16" rx="5" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.5"/>
+                    <rect x="44" y="82" width="52" height="13" rx="3" fill="#fff" stroke="#2B4EAA" strokeWidth="1.5"/>
+                    <circle cx="96" cy="61" r="3" fill="#2B4EAA" opacity="0.7"/>
+                    <circle cx="106" cy="61" r="3" fill="#E5E7EB"/>
+                    <line x1="38" y1="70" x2="102" y2="70" stroke="#2B4EAA" strokeWidth="1" strokeLinecap="round" opacity="0.25"/>
+                  </svg>
+                  
+                  <h2 className="up-headline">Ready to print?</h2>
+                  <p className="up-subline">Upload your documents to get started with high-quality campus printing.</p>
+                  
+                  <button className="up-select-btn" onClick={() => inputRef.current?.click()}>
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     Select Files
                   </button>
                 </div>
-              </>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
-                {files.map(item => (
-                  <div key={item.id} style={{
-                    background: '#fff',
-                    border: '1px solid var(--border)',
-                    borderRadius: '16px',
-                    padding: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                    position: 'relative'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        background: 'var(--gl)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                      }}>
-                        {getFileIcon(item.file.name)}
+              ) : (
+                /* Files listed */
+                <>
+                  {files.map((f) => (
+                    <div className="up-file-card" key={f.id}>
+                      <div className="up-file-icon">
+                        {f.name.endsWith(".pdf") ? "📄" : f.name.match(/\.(jpg|jpeg|png)$/i) ? "🖼️" : "📝"}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ 
-                          fontSize: '14px', 
-                          fontWeight: '600', 
-                          color: 'var(--gd)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          {item.file.name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: 'var(--grey)' }}>
-                          {formatFileSize(item.file.size)}
+                      <div className="up-file-info">
+                        <div className="up-file-name">{f.name}</div>
+                        <div className="up-file-meta">{f.size}</div>
+                        <div className="up-pages-row">
+                          <span className="up-pages-label">Pages:</span>
+                          <input
+                            className="up-pages-input"
+                            value={f.pagesToPrint}
+                            onChange={(e) => updatePages(f.id, e.target.value)}
+                            placeholder="e.g. 1-3, All"
+                          />
                         </div>
                       </div>
-                      <button 
-                        onClick={() => removeFile(item.id)}
-                        aria-label="Remove file"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--grey)',
-                          cursor: 'pointer',
-                          padding: '4px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                      </button>
+                      <button className="up-remove" onClick={() => removeFile(f.id)}>×</button>
                     </div>
-                    
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between',
-                      background: 'var(--gl)',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      fontSize: '13px'
-                    }}>
-                      <span style={{ color: 'var(--grey-mid)', fontWeight: '500' }}>Pages to Print</span>
-                      <input 
-                        type="text" 
-                        value={item.pagesToPrint}
-                        onChange={(e) => updatePagesToPrint(item.id, e.target.value)}
-                        placeholder="All"
-                        style={{
-                          width: '80px',
-                          border: '1px solid var(--border)',
-                          borderRadius: '6px',
-                          padding: '4px 8px',
-                          fontSize: '13px',
-                          textAlign: 'center',
-                          outline: 'none',
-                          background: '#fff',
-                          color: 'var(--gd)'
-                        }}
-                      />
-                    </div>
+                  ))}
+                  <button className="up-add-more" onClick={() => inputRef.current?.click()}>
+                    + Add More Files
+                  </button>
+                </>
+              )}
+
+              <div className="up-hint">✓ Preview pages before you print</div>
+              <div className="up-formats">Accepted formats: PDF, DOCX, JPG, PNG. Max 100MB per file</div>
+            </div>
+
+            {/* Footer */}
+            <div className="up-footer">
+              {uploading && (
+                <div style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#8892a4', marginBottom: '6px' }}>
+                    <span>Uploading...</span>
+                    <span>{Math.round(uploadProgress)}%</span>
                   </div>
-                ))}
-
-                <button 
-                  onClick={handleUploadClick}
-                  style={{
-                    background: 'none',
-                    border: '2px dashed var(--border)',
-                    color: 'var(--grey-mid)',
-                    padding: '16px',
-                    borderRadius: '16px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'border-color 0.2s',
-                    width: '100%'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
-                >
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Add More Files
-                </button>
-              </div>
-            )}
-            
-            {error && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '16px', textAlign: 'center' }}>{error}</p>}
-            
-            {uploading && (
-              <div style={{ marginTop: '20px', width: '100%', maxWidth: '280px', margin: '20px auto 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px', color: 'var(--grey-mid)' }}>
-                  <span>Uploading {files.length} {files.length === 1 ? 'file' : 'files'}...</span>
-                  <span>{Math.round(uploadProgress)}%</span>
+                  <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#4a5fc1', transition: 'width 0.2s' }}></div>
+                  </div>
                 </div>
-                <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent)', transition: 'width 0.2s' }}></div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="upload-btn-wrap" style={{ flexShrink: 0, paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileChange} 
-              style={{ display: 'none' }} 
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            />
-            <button 
-              className="upload-btn" 
-              onClick={handleContinue}
-              disabled={files.length === 0 || uploading}
-              style={{ 
-                opacity: (files.length === 0 || uploading) ? 0.6 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              {uploading ? 'Processing...' : `Continue ${files.length > 0 ? `(${files.length} file${files.length > 1 ? 's' : ''})` : ''} →`}
-            </button>
+              )}
+              <button
+                className={`up-btn-upload${files.length > 0 && !uploading ? " active" : ""}`}
+                disabled={files.length === 0 || uploading}
+                onClick={handleContinue}
+              >
+                {uploading ? "Processing..." : "Upload"}
+                {files.length > 0 && !uploading && <span className="up-badge">{files.length}</span>}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+    </>
   )
 }
