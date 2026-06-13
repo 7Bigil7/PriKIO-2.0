@@ -139,21 +139,28 @@ export default function FilePreviewModal({
     }
 
     let url: string | null = null;
-    if (file.fileBuffer && file.originalFile) {
-      const blob = new Blob([file.fileBuffer], { type: file.originalFile.type });
-      url = URL.createObjectURL(blob);
-    } else if (file.originalFile) {
-      url = URL.createObjectURL(file.originalFile)
+    try {
+      if (file.fileBuffer && file.fileBuffer.byteLength > 0 && file.originalFile) {
+        const blob = new Blob([file.fileBuffer], { type: file.originalFile.type });
+        url = URL.createObjectURL(blob);
+      } else if (file.originalFile) {
+        url = URL.createObjectURL(file.originalFile)
+      }
+      if (url) setObjectUrl(url)
+    } catch (e) {
+      console.error("Blob creation error:", e);
     }
-    if (url) setObjectUrl(url)
     
-    const isPdf = file.originalFile.type === 'application/pdf' || file.fileName.toLowerCase().endsWith('.pdf')
+    const isPdf = typeof file.originalFile?.type === 'string' && file.originalFile.type === 'application/pdf' 
+                  || typeof file.fileName === 'string' && file.fileName.toLowerCase().endsWith('.pdf')
     
     if (isPdf) {
       try {
-        if (file.fileBuffer) {
+        if (file.fileBuffer && file.fileBuffer.byteLength > 0) {
+          // Clone the buffer so PDF.js doesn't detach our original memory reference when transferring to the worker
+          const bufferCopy = file.fileBuffer.slice(0);
           pdfjsLib.getDocument({ 
-            data: file.fileBuffer,
+            data: bufferCopy,
             cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
             cMapPacked: true,
             standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
@@ -202,7 +209,7 @@ export default function FilePreviewModal({
     onSave(formatSetToPageRange(selectedPages, file.pageCount))
   }
 
-  const isImage = file.originalFile?.type.startsWith('image/')
+  const isImage = typeof file.originalFile?.type === 'string' && file.originalFile.type.startsWith('image/')
 
   return (
     <div className="modal-overlay" style={{ position: 'fixed', zIndex: 9999, inset: 0 }}>
