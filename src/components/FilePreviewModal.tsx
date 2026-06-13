@@ -141,15 +141,21 @@ export default function FilePreviewModal({
       return
     }
 
-    const url = URL.createObjectURL(file.originalFile)
-    setObjectUrl(url)
+    let url: string | null = null;
+    if (file.fileBuffer && file.originalFile) {
+      const blob = new Blob([file.fileBuffer], { type: file.originalFile.type });
+      url = URL.createObjectURL(blob);
+    } else if (file.originalFile) {
+      url = URL.createObjectURL(file.originalFile)
+    }
+    if (url) setObjectUrl(url)
     
     const isPdf = file.originalFile.type === 'application/pdf' || file.fileName.toLowerCase().endsWith('.pdf')
     
     if (isPdf) {
-      file.originalFile.arrayBuffer().then(buffer => {
+      if (file.fileBuffer) {
         pdfjsLib.getDocument({ 
-          data: buffer,
+          data: file.fileBuffer,
           cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
           cMapPacked: true,
           standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
@@ -157,10 +163,22 @@ export default function FilePreviewModal({
           console.error(err)
           setErrorMsg(err.message || 'Failed to load PDF document.')
         })
-      }).catch(err => {
-        console.error(err)
-        setErrorMsg('Failed to read file data.')
-      })
+      } else if (file.originalFile) {
+        file.originalFile.arrayBuffer().then(buffer => {
+          pdfjsLib.getDocument({ 
+            data: buffer,
+            cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
+            cMapPacked: true,
+            standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
+          }).promise.then(setPdf).catch(err => {
+            console.error(err)
+            setErrorMsg(err.message || 'Failed to load PDF document.')
+          })
+        }).catch(err => {
+          console.error(err)
+          setErrorMsg('Failed to read file data.')
+        })
+      }
     }
 
     return () => {

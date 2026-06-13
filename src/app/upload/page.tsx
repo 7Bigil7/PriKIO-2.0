@@ -67,11 +67,15 @@ export default function UploadScreen() {
         const result = await response.json()
         if (!response.ok) throw new Error(result.error)
 
+        // Read the file into memory IMMEDIATELY so Android doesn't revoke the file handle later
+        const buffer = await item.file.arrayBuffer()
+
         results.push({ 
           id: Math.random().toString(36).substring(7),
           ...result.data, 
           pagesToPrint: item.pagesToPrint,
-          originalFile: item.file
+          originalFile: item.file,
+          fileBuffer: buffer
         })
       }
 
