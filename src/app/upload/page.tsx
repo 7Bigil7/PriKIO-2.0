@@ -100,7 +100,9 @@ export default function UploadScreen() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Quicksand:wght@400;500;600;700&display=swap');
         
         .up-root {
-          height: 100vh; width: 100vw;
+          height: 100vh;
+          height: 100dvh;
+          width: 100vw;
           display: flex; overflow: hidden;
           font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           background: #1a2340;
@@ -348,8 +350,8 @@ export default function UploadScreen() {
           }
           .up-card { 
             max-width: 100%; 
-            max-height: 100vh; 
-            height: 100vh;
+            max-height: 100dvh; 
+            height: 100dvh;
             border-radius: 0; 
             box-shadow: none;
           }
