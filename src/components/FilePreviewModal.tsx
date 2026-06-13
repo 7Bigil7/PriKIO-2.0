@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import * as pdfjsLib from 'pdfjs-dist'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { parsePageRangeToSet, formatSetToPageRange } from '@/lib/pageRangeUtils'
 import { PrintFile } from '@/store/usePrintStore'
 
