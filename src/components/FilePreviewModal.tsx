@@ -4,8 +4,8 @@ import { parsePageRangeToSet, formatSetToPageRange } from '@/lib/pageRangeUtils'
 import { PrintFile } from '@/store/usePrintStore'
 
 if (typeof window !== 'undefined') {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (!isIOS) {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!isMobile) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
   }
 }
@@ -44,8 +44,14 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
     let renderTask: any
     pdf.getPage(pageNum).then((page: any) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-      const scale = isMobile ? 1.0 : 1.5;
-      const viewport = page.getViewport({ scale })
+      let scale = isMobile ? 1.0 : 1.5;
+      let viewport = page.getViewport({ scale })
+      
+      // Memory safety cap for Android Chrome
+      if (isMobile && viewport.width > 1000) {
+        scale = 1000 / (viewport.width / scale);
+        viewport = page.getViewport({ scale });
+      }
       const canvas = canvasRef.current
       if (!canvas) return
       const context = canvas.getContext('2d')
