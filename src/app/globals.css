@@ -701,18 +701,11 @@ html { scroll-behavior: smooth; }
     animation: fadeUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .logo-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .logo-wordmark {
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--navy);
+  .real-logo {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.05));
   }
 
   /* Hero headline */
@@ -1159,8 +1152,9 @@ html { scroll-behavior: smooth; }
       margin-bottom: 40px;
       padding: 0;
     }
-    .logo-icon { width: 44px; height: 44px; }
-    .logo-wordmark { font-size: 12px; letter-spacing: 0.2em; }
+    .real-logo { 
+      height: 52px; 
+    }
     .hero-content {
       padding: 0;
       display: flex;

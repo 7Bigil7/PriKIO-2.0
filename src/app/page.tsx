@@ -48,12 +48,7 @@ export default function LandingPage() {
 
   
   <div className="logo-row">
-    <svg className="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Presidency University logo">
-      <path d="M6 28 C6 28 9 10 18 6 C27 10 30 28 30 28" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-      <path d="M10 28 C10 28 12 16 18 13 C24 16 26 28 26 28" stroke="#2B4EAA" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-      <line x1="4" y1="28" x2="32" y2="28" stroke="#0D1F3C" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
-    <span className="logo-wordmark">Presidency University</span>
+    <img src="/logo.png" alt="Presidency University" className="real-logo" />
   </div>
 
   
