@@ -34,7 +34,7 @@ export default function Kiosk() {
   }
 
   return (
-    <div style={{ background: 'var(--body-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--sans)' }}>
+    <div style={{ background: 'var(--body-bg)', minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--sans)' }}>
       <div style={{ width: '1920px', height: '1080px', background: 'var(--bg)', position: 'relative', overflow: 'hidden', borderRadius: '24px', boxShadow: '0 40px 100px rgba(0,0,0,0.1)', transform: 'scale(0.6)', transformOrigin: 'center' }}>
         
         <header style={{ background: 'var(--navy)', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>

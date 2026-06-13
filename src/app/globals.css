@@ -41,7 +41,7 @@ body {
   background: var(--body-bg);
   color: var(--navy);
   overflow-x: hidden;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -376,7 +376,7 @@ html { scroll-behavior: smooth; }
 
 /* Responsive adjustments */
 @media (max-width: 340px) {
-  .phone-card { border-radius: 0; min-height: 100vh; }
+  .phone-card { border-radius: 0; min-height: 100dvh; }
   .screen-title { font-size: 20px; }
 }
 
@@ -390,7 +390,7 @@ html { scroll-behavior: smooth; }
   .page-root {
     display: grid;
     grid-template-columns: 45% 55%;
-    min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
   }
 
@@ -405,7 +405,7 @@ html { scroll-behavior: smooth; }
     color: white;
     position: relative;
     overflow: hidden;
-    min-height: 100vh;
+    min-height: 100dvh;
     height: 100%;
   }
   .desktop-left-panel > * + * {
@@ -554,7 +554,7 @@ html { scroll-behavior: smooth; }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     padding: 2rem;
     overflow-y: auto;
   }
@@ -608,7 +608,7 @@ html { scroll-behavior: smooth; }
   /* ─── HERO ─── */
   .hero {
     position: relative;
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1153,7 +1153,7 @@ html { scroll-behavior: smooth; }
     display: grid !important;
     grid-template-columns: 45% 55% !important;
     grid-template-rows: 1fr !important;
-    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
   }
 
@@ -1166,8 +1166,8 @@ html { scroll-behavior: smooth; }
     flex-direction: column !important;
     justify-content: center !important;   /* vertical center */
     align-items: flex-start !important;   /* left-align text */
-    min-height: 100vh !important;
-    max-height: 100vh;
+    min-height: 100dvh !important;
+    max-height: 100dvh;
     overflow: hidden;
     padding: 4rem 3rem !important;
     gap: 1rem !important;
@@ -1188,8 +1188,8 @@ html { scroll-behavior: smooth; }
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    min-height: 100vh !important;
-    max-height: 100vh;
+    min-height: 100dvh !important;
+    max-height: 100dvh;
     overflow-y: auto;
     padding: 2rem !important;
     background: #f0f1f7 !important;
