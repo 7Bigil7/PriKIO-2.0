@@ -27,8 +27,6 @@ create table print_jobs (
   status        text default 'pending',
                 -- pending | processing | sent | ready | collected | failed
   total_amount  decimal(8,2),
-  otp           text,
-  otp_expires_at timestamptz,
   payment_id    text,                 -- Razorpay payment ID
   payment_status text default 'unpaid', -- unpaid | paid | failed | refunded
   created_at    timestamptz default now(),
@@ -45,6 +43,17 @@ create table kiosks (
   is_online     boolean default true,
   queue_count   int default 0,
   last_ping     timestamptz
+);
+
+-- PRINT OTPS
+create table print_otps (
+  id            uuid primary key default gen_random_uuid(),
+  job_id        uuid references print_jobs(id) on delete cascade,
+  otp_hash      text not null,
+  expires_at    timestamptz not null,
+  attempts      int default 0,
+  is_valid      boolean default true,
+  created_at    timestamptz default now()
 );
 
 -- TRANSACTIONS
@@ -79,6 +88,7 @@ alter table print_jobs enable row level security;
 alter table transactions enable row level security;
 alter table cloud_documents enable row level security;
 alter table kiosks enable row level security;
+alter table print_otps enable row level security;
 
 -- profiles: user can only read/update their own row
 create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
@@ -100,6 +110,23 @@ create policy "Users can view own cloud documents" on cloud_documents for select
 create policy "Users can insert own cloud documents" on cloud_documents for insert with check (auth.uid() = user_id);
 create policy "Users can update own cloud documents" on cloud_documents for update using (auth.uid() = user_id);
 create policy "Users can delete own cloud documents" on cloud_documents for delete using (auth.uid() = user_id);
+
+-- print_otps: system/service role mostly, but user can view their own
+create policy "Users can view own OTPs" on print_otps for select using (
+  exists (
+    select 1 from print_jobs where id = print_otps.job_id and user_id = auth.uid()
+  )
+);
+create policy "Users can insert own OTPs" on print_otps for insert with check (
+  exists (
+    select 1 from print_jobs where id = print_otps.job_id and user_id = auth.uid()
+  )
+);
+create policy "Users can update own OTPs" on print_otps for update using (
+  exists (
+    select 1 from print_jobs where id = print_otps.job_id and user_id = auth.uid()
+  )
+);
 
 -- kiosks: all authenticated users can read
 create policy "Authenticated users can view kiosks" on kiosks for select using (auth.role() = 'authenticated');

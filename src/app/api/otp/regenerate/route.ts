@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       .eq('job_id', job_id)
       .eq('is_valid', true);
 
-    // Generate 6-digit OTP
+    // Generate new 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otp_hash = await bcrypt.hash(otp, 10);
     const expires_at = new Date(Date.now() + 2 * 60 * 1000).toISOString();
@@ -46,12 +46,12 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error('Insert OTP Error:', insertError);
-      return NextResponse.json({ error: 'Failed to create OTP' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to regenerate OTP' }, { status: 500 });
     }
 
     return NextResponse.json({ otp, expires_at });
   } catch (err) {
-    console.error('OTP Generate Error:', err);
+    console.error('OTP Regenerate Error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
