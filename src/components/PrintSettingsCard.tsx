@@ -344,6 +344,9 @@ export default function PrintSettingsCard({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <p className="sec-label" style={{ margin: 0 }}>Number of Copies</p>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#888" }}>
+                {copies} {copies === 1 ? 'copy' : 'copies'} × {sheetsNeeded} {sheetsNeeded === 1 ? 'sheet' : 'sheets'}
+              </p>
             </div>
             <div className="stepper">
               <button className="stepper-btn" onClick={() => setCopies(c => Math.max(1, c - 1))}>−</button>
@@ -355,10 +358,15 @@ export default function PrintSettingsCard({
         </div>
 
         {/* ── Cost summary + CTA ── */}
-        <div style={{ padding: "1rem 1.5rem 1.5rem", borderTop: "1px solid #f0f1f7" }}>
+        <div style={{ padding: "1.25rem 1.5rem", borderTop: "1px solid #f0f1f7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", fontSize: "0.95rem", color: "#555" }}>
+            <span>{sheetsNeeded * copies} Sheet{sheetsNeeded * copies !== 1 ? 's' : ''}</span>
+            <span>₹ {printCost.toFixed(2)}</span>
+          </div>
 
           <button className="confirm-btn" onClick={handleConfirm}>
-            Confirm & Pay
+            <span>Confirm & Pay</span>
+            <span className="confirm-badge">₹ {printCost.toFixed(2)}</span>
           </button>
         </div>
 
