@@ -445,9 +445,7 @@ export default function UploadScreen() {
 
               <div className="up-hint">✓ Preview pages before you print</div>
               <div className="up-formats">Accepted formats: PDF, JPG, PNG. Max 100MB per file</div>
-              <div style={{ fontSize: '11px', color: '#dc2626', background: '#fef2f2', padding: '8px 12px', borderRadius: '8px', marginTop: '12px', border: '1px solid #fecaca', lineHeight: '1.4' }}>
-                <strong>Printing a Word Doc?</strong> Please Save As/Export as a PDF first to ensure your formatting doesn't change!
-              </div>
+
             </div>
 
             {/* Footer */}
