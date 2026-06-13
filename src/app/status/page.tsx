@@ -211,123 +211,17 @@ function StatusScreen() {
           }
 
           .vk-card {
-            background: #fff; border-radius: 20px;
+            background: #fff; border-radius: 24px;
             width: 100%; max-width: 400px;
-            overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.10);
-          }
-          .vk-card-header {
-            background: #1a2340; padding: 24px 28px 20px;
+            padding: 32px 24px;
             text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
           }
           .vk-card-title {
-            font-size: clamp(18px,2.5vw,22px); color: #fff;
-            font-weight: 700;
-            margin-bottom: 8px;
-          }
-          .vk-card-sub { font-size: 13px; color: #8892a4; line-height: 1.5; }
-
-          .vk-card-body { padding: clamp(20px,4vw,32px) clamp(16px,4vw,28px); }
-
-          /* QR Box */
-          .vk-qr-wrap {
-            display: flex; flex-direction: column; align-items: center;
-            margin-bottom: 24px;
-          }
-          .vk-qr-box {
-            width: 160px; height: 160px; background: #f7f8fa;
-            border: 2px solid #e2e8f0; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 12px; position: relative; overflow: hidden;
-          }
-          .vk-qr-inner {
-            width: 120px; height: 120px;
-            background: repeating-conic-gradient(#1a2340 0% 25%, #fff 0% 50%) 0 0 / 10px 10px;
-            border-radius: 4px;
-          }
-          .vk-expires {
-            font-size: 12px; color: #8892a4;
-            display: flex; align-items: center; gap: 5px;
-          }
-          .vk-expires-time { color: #4a5fc1; font-weight: 600; }
-
-          /* Expired state */
-          .vk-expired-label {
-            font-size: 13px; font-weight: 700; color: #e53e3e;
-            letter-spacing: 0.08em; margin-top: 6px;
-          }
-          .vk-qr-expired { opacity: 0.3; filter: grayscale(1); }
-
-          /* Action buttons */
-          .vk-btn-primary {
-            width: 100%; padding: 14px; border-radius: 50px;
-            background: #1a2340; color: #fff; border: none;
-            font-size: 15px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            margin-bottom: 12px; transition: opacity 0.2s;
-          }
-          .vk-btn-primary:hover { opacity: 0.88; }
-          .vk-btn-row { display: flex; gap: 10px; margin-bottom: 20px; }
-          .vk-btn-ghost {
-            flex: 1; padding: 12px 8px; border-radius: 50px;
-            background: transparent; border: 1.5px solid #d1d5db;
-            color: #1a2340; font-size: 14px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 6px; transition: border-color 0.2s;
-          }
-          .vk-btn-ghost:hover { border-color: #4a5fc1; color: #4a5fc1; }
-          .vk-btn-regen {
-            width: 100%; padding: 14px; border-radius: 50px;
-            background: #1a2340; color: #fff; border: none;
-            font-size: 15px; font-weight: 600; cursor: pointer;
-            margin-bottom: 20px;
-            transition: opacity 0.2s;
-          }
-          .vk-btn-regen:hover { opacity: 0.88; }
-
-          /* How to steps */
-          .vk-steps-title {
-            font-size: 13px; font-weight: 700; color: #8892a4;
-            letter-spacing: 0.08em; margin-bottom: 12px;
-          }
-          .vk-step { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
-          .vk-step-num {
-            width: 22px; height: 22px; border-radius: 50%;
-            background: #4a5fc1; color: #fff;
-            font-size: 11px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-          }
-          .vk-step-text { font-size: 13px; color: #4a5568; line-height: 1.5; }
-
-          /* OTP Modal */
-          .vk-modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.45);
-            display: flex; align-items: flex-end; justify-content: center;
-            z-index: 100;
-          }
-          @media (min-width: 640px) {
-            .vk-modal-overlay { align-items: center; }
-            .vk-modal { border-radius: 20px !important; max-width: 360px; width: 100%; }
-          }
-          .vk-modal {
-            background: #fff;
-            border-radius: 20px 20px 0 0;
-            padding: 28px 28px 36px;
-            width: 100%; position: relative;
-            animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
-          }
-          @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-          .vk-modal-close {
-            position: absolute; top: 16px; right: 16px;
-            width: 28px; height: 28px; border-radius: 50%;
-            background: #f0f2f5; border: none; cursor: pointer;
-            font-size: 16px; display: flex; align-items: center; justify-content: center;
-            color: #4a5568;
-          }
-          .vk-modal-title {
             font-size: 20px; color: #1a2340;
             font-weight: 700;
-            text-align: center; margin-bottom: 24px;
+            margin-bottom: 24px;
           }
           .vk-otp-digits {
             display: flex; justify-content: center; gap: clamp(12px,4vw,24px);
@@ -337,21 +231,43 @@ function StatusScreen() {
             font-size: clamp(36px,10vw,52px); font-weight: 700;
             color: #1a2340; line-height: 1;
           }
-          .vk-copy-btn {
-            display: block; margin: 0 auto 24px;
-            background: none; border: none;
-            color: #4a5fc1; font-size: 14px; font-weight: 600;
-            cursor: pointer; letter-spacing: 0.02em;
+          .vk-copy-link {
+            font-size: 14px; color: #4a5fc1; font-weight: 600;
+            cursor: pointer; margin-bottom: 24px; background: none; border: none;
+            letter-spacing: 0.02em;
           }
+          .vk-btn-primary {
+            width: 100%; padding: 14px; border-radius: 50px;
+            background: #1a2340; color: #fff; border: none;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-bottom: 12px; transition: opacity 0.2s;
+          }
+          .vk-btn-primary:hover { opacity: 0.88; }
           .vk-btn-wa {
             width: 100%; padding: 13px; border-radius: 50px;
             background: transparent; border: 1.5px solid #25d366;
-            color: #25d366; font-size: 14px; font-weight: 600;
+            color: #25d366; font-size: 15px; font-weight: 600;
             cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 8px; margin-top: 10px;
+            justify-content: center; gap: 8px;
             transition: background 0.2s;
           }
           .vk-btn-wa:hover { background: rgba(37,211,102,0.08); }
+          .vk-expires {
+            font-size: 12px; color: #8892a4; margin-top: 16px;
+          }
+          .vk-expires-time { color: #4a5fc1; font-weight: 600; }
+          .vk-expired-label {
+            font-size: 13px; font-weight: 700; color: #e53e3e;
+            letter-spacing: 0.08em; margin-top: 6px;
+          }
+          .vk-btn-regen {
+            width: 100%; padding: 14px; border-radius: 50px;
+            background: #1a2340; color: #fff; border: none;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s;
+          }
+          .vk-btn-regen:hover { opacity: 0.88; }
 
           /* Mobile: hide left panel */
           @media (max-width: 639px) {
@@ -362,8 +278,8 @@ function StatusScreen() {
             }
             .vk-card {
               max-width: 100%;
-              max-height: 100vh;
-              height: 100vh;
+              max-height: 100dvh;
+              height: 100dvh;
               border-radius: 0;
               box-shadow: none;
             }
@@ -388,46 +304,32 @@ function StatusScreen() {
           {/* Right content panel */}
           <div className="vk-right">
             <div className="vk-card">
-              <div className="vk-card-header">
-                <h2 className="vk-card-title">Your Print Code is Ready!</h2>
-                <p className="vk-card-sub">Use this OTP at any CampusPrint kiosk within 24 hours.</p>
+              <h2 className="vk-card-title">OTP Code</h2>
+              <div className="vk-otp-digits">
+                {otpDigits.map((d, i) => <span className="vk-otp-digit" key={i} style={{ color: expired ? '#a0aec0' : '#1a2340' }}>{d}</span>)}
               </div>
-              <div className="vk-card-body">
-                <div className="vk-qr-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div className="vk-otp-digits" style={{ marginBottom: '16px' }}>
-                    {otpDigits.map((d, i) => <span className="vk-otp-digit" key={i} style={{ color: expired ? '#a0aec0' : '#1a2340' }}>{d}</span>)}
-                  </div>
-                  {!expired
-                    ? <p className="vk-expires">Expires in <span className="vk-expires-time">{mins}:{secs}</span></p>
-                    : <p className="vk-expired-label">EXPIRED</p>
-                  }
-                </div>
-                {!expired ? (
-                  <>
-                    <button className="vk-btn-primary">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                      Download
-                    </button>
-                    <div className="vk-btn-row">
-                      <button className="vk-btn-ghost" onClick={handleCopy}>{copied ? "Copied!" : "Copy Code"}</button>
-                      <button className="vk-btn-ghost">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        Share
-                      </button>
-                    </div>
-                  </>
-                ) : (
+              
+              {!expired ? (
+                <>
+                  <button className="vk-copy-link" onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</button>
+                  <button className="vk-btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download
+                  </button>
+                  <button className="vk-btn-wa">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                    </svg>
+                    Share via WhatsApp
+                  </button>
+                  <p className="vk-expires">Expires in <span className="vk-expires-time">{mins}:{secs}</span></p>
+                </>
+              ) : (
+                <>
+                  <p className="vk-expired-label" style={{ marginBottom: '24px' }}>EXPIRED</p>
                   <button className="vk-btn-regen" onClick={() => generateOtp(printJobId!)}>Regenerate Code</button>
-                )}
-
-                <p className="vk-steps-title">HOW TO PRINT AT THE KIOSK</p>
-                {["Go to the nearest CampusPrint kiosk.", "Enter this OTP on the screen.", "Collect your prints!"].map((s, i) => (
-                  <div className="vk-step" key={i}>
-                    <div className="vk-step-num">{i + 1}</div>
-                    <p className="vk-step-text">{s}</p>
-                  </div>
-                ))}
-              </div>
+                </>
+              )}
             </div>
           </div>
         </div>
