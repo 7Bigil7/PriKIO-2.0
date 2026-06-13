@@ -10,21 +10,29 @@ if (typeof window !== 'undefined') {
 function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum: number, selected: boolean, onToggle: (n: number) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(pageNum <= 2)
 
   useEffect(() => {
+    if (isVisible) return; // already visible
+
+    const scrollContainer = document.getElementById('pdf-scroll-container');
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) setIsVisible(true)
-    }, { rootMargin: '400px' })
+    }, { 
+      root: scrollContainer,
+      rootMargin: '600px' 
+    })
     if (containerRef.current) observer.observe(containerRef.current)
     return () => observer.disconnect()
-  }, [])
+  }, [isVisible])
 
   useEffect(() => {
     if (!isVisible) return
     let renderTask: any
     pdf.getPage(pageNum).then((page: any) => {
-      const viewport = page.getViewport({ scale: 1.5 })
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+      const scale = isMobile ? 1.0 : 1.5;
+      const viewport = page.getViewport({ scale })
       const canvas = canvasRef.current
       if (!canvas) return
       const context = canvas.getContext('2d')
@@ -37,6 +45,12 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
         viewport: viewport
       }
       renderTask = page.render(renderContext)
+      renderTask.promise.catch((err: any) => {
+        // Ignore task cancellation errors, log others
+        if (err.name !== 'RenderingCancelledException') {
+          console.error(`Error rendering page ${pageNum}:`, err)
+        }
+      })
     })
     return () => {
       if (renderTask) renderTask.cancel()
@@ -158,7 +172,7 @@ export default function FilePreviewModal({
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', background: 'var(--body-bg)' }}>
+        <div id="pdf-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '16px', background: 'var(--body-bg)' }}>
           {pdf ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', padding: '16px 0' }}>
               {Array.from({ length: pdf.numPages }, (_, i) => i + 1).map(pageNum => (
