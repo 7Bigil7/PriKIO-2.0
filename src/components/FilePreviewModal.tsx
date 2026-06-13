@@ -4,7 +4,7 @@ import { parsePageRangeToSet, formatSetToPageRange } from '@/lib/pageRangeUtils'
 import { PrintFile } from '@/store/usePrintStore'
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
 function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum: number, selected: boolean, onToggle: (n: number) => void }) {
@@ -113,9 +113,14 @@ export default function FilePreviewModal({
     const isPdf = file.originalFile.type === 'application/pdf' || file.fileName.toLowerCase().endsWith('.pdf')
     
     if (isPdf) {
-      pdfjsLib.getDocument({ url }).promise.then(setPdf).catch(err => {
+      file.originalFile.arrayBuffer().then(buffer => {
+        pdfjsLib.getDocument({ data: buffer }).promise.then(setPdf).catch(err => {
+          console.error(err)
+          setErrorMsg(err.message || 'Failed to load PDF document.')
+        })
+      }).catch(err => {
         console.error(err)
-        setErrorMsg(err.message || 'Failed to load PDF document.')
+        setErrorMsg('Failed to read file data.')
       })
     }
 
