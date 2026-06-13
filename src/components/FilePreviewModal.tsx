@@ -4,7 +4,10 @@ import { parsePageRangeToSet, formatSetToPageRange } from '@/lib/pageRangeUtils'
 import { PrintFile } from '@/store/usePrintStore'
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!isIOS) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  }
 }
 
 function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum: number, selected: boolean, onToggle: (n: number) => void }) {
@@ -49,6 +52,7 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
       if (!context) return
       canvas.height = viewport.height
       canvas.width = viewport.width
+      canvas.style.aspectRatio = `${viewport.width} / ${viewport.height}`;
 
       const renderContext = {
         canvasContext: context,
@@ -89,7 +93,7 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
         boxShadow: selected ? '0 8px 24px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)'
       }}
     >
-      <canvas ref={canvasRef} style={{ width: '100%', height: 'auto', display: 'block' }} />
+      <canvas ref={canvasRef} style={{ width: '100%', maxWidth: '100%', display: 'block' }} />
       <div style={{ position: 'absolute', bottom: 12, left: 12, background: 'rgba(0,0,0,0.75)', color: '#fff', fontSize: '14px', fontWeight: 600, padding: '4px 10px', borderRadius: '6px' }}>
         Page {pageNum}
       </div>
@@ -138,7 +142,12 @@ export default function FilePreviewModal({
     
     if (isPdf) {
       file.originalFile.arrayBuffer().then(buffer => {
-        pdfjsLib.getDocument({ data: buffer }).promise.then(setPdf).catch(err => {
+        pdfjsLib.getDocument({ 
+          data: buffer,
+          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
+          cMapPacked: true,
+          standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
+        }).promise.then(setPdf).catch(err => {
           console.error(err)
           setErrorMsg(err.message || 'Failed to load PDF document.')
         })
