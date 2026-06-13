@@ -4,10 +4,7 @@ import { parsePageRangeToSet, formatSetToPageRange } from '@/lib/pageRangeUtils'
 import { PrintFile } from '@/store/usePrintStore'
 
 if (typeof window !== 'undefined') {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (!isMobile) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-  }
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum: number, selected: boolean, onToggle: (n: number) => void }) {
@@ -153,20 +150,10 @@ export default function FilePreviewModal({
     const isPdf = file.originalFile.type === 'application/pdf' || file.fileName.toLowerCase().endsWith('.pdf')
     
     if (isPdf) {
-      if (file.fileBuffer) {
-        pdfjsLib.getDocument({ 
-          data: file.fileBuffer,
-          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
-          cMapPacked: true,
-          standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
-        }).promise.then(setPdf).catch(err => {
-          console.error(err)
-          setErrorMsg(err.message || 'Failed to load PDF document.')
-        })
-      } else if (file.originalFile) {
-        file.originalFile.arrayBuffer().then(buffer => {
+      try {
+        if (file.fileBuffer) {
           pdfjsLib.getDocument({ 
-            data: buffer,
+            data: file.fileBuffer,
             cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
             cMapPacked: true,
             standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
@@ -174,10 +161,25 @@ export default function FilePreviewModal({
             console.error(err)
             setErrorMsg(err.message || 'Failed to load PDF document.')
           })
-        }).catch(err => {
-          console.error(err)
-          setErrorMsg('Failed to read file data.')
-        })
+        } else if (file.originalFile) {
+          file.originalFile.arrayBuffer().then(buffer => {
+            pdfjsLib.getDocument({ 
+              data: buffer,
+              cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
+              cMapPacked: true,
+              standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
+            }).promise.then(setPdf).catch(err => {
+              console.error(err)
+              setErrorMsg(err.message || 'Failed to load PDF document.')
+            })
+          }).catch(err => {
+            console.error(err)
+            setErrorMsg('Failed to read file data.')
+          })
+        }
+      } catch (err: any) {
+        console.error("Synchronous error starting PDF.js:", err);
+        setErrorMsg(err.message || 'Critical error starting PDF renderer.');
       }
     }
 
