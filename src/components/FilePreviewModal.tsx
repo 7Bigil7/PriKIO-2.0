@@ -16,14 +16,24 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
     if (isVisible) return; // already visible
 
     const scrollContainer = document.getElementById('pdf-scroll-container');
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setIsVisible(true)
-    }, { 
-      root: scrollContainer,
-      rootMargin: '600px' 
-    })
-    if (containerRef.current) observer.observe(containerRef.current)
-    return () => observer.disconnect()
+    if (!scrollContainer) return;
+
+    const checkVisibility = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      
+      // If the page is within 1000px of the visible scroll area
+      if (rect.top < containerRect.bottom + 1000 && rect.bottom > containerRect.top - 1000) {
+        setIsVisible(true);
+      }
+    };
+
+    scrollContainer.addEventListener('scroll', checkVisibility, { passive: true });
+    // Check initially in case it's already in view but pageNum > 2
+    setTimeout(checkVisibility, 100);
+
+    return () => scrollContainer.removeEventListener('scroll', checkVisibility);
   }, [isVisible])
 
   useEffect(() => {
