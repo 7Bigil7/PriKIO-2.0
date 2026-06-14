@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import AppHeader from '@/components/AppHeader'
 
 function StatusScreen() {
   const router = useRouter()
@@ -170,7 +171,7 @@ function StatusScreen() {
             height: 100dvh; width: 100vw;
             display: flex; overflow: hidden;
             font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f0f2f5;
+            background: #ffffff;
           }
           
           .vk-root * {
@@ -205,36 +206,32 @@ function StatusScreen() {
 
           /* Right panel */
           .vk-right {
-            flex: 1; background: #f0f2f5;
-            display: flex; align-items: center; justify-content: center;
-            padding: clamp(16px,3vw,40px); overflow: hidden;
+            flex: 1; background: #ffffff;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 0; overflow: hidden;
+            position: relative;
+          }
+          
+          .vk-header-container {
+            width: 100%;
+            padding: 0;
+            z-index: 10;
+            flex-shrink: 0;
           }
 
           .vk-card {
-            background: #fff; border-radius: 24px;
-            width: 100%; max-width: 400px;
-            padding: 32px 24px;
+            background: transparent; border-radius: 0;
+            width: 100%; max-width: 440px;
+            padding: 20px 24px 60px;
             text-align: center;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+            box-shadow: none;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: auto;
           }
           .vk-card-title {
             font-size: 20px; color: #1a2340;
             font-weight: 700;
-            margin-bottom: 24px;
-          }
-          .vk-otp-digits {
-            display: flex; justify-content: center; gap: clamp(12px,4vw,24px);
-            margin-bottom: 12px;
-          }
-          .vk-otp-digit {
-            font-size: clamp(36px,10vw,52px); font-weight: 700;
-            color: #1a2340; line-height: 1;
-          }
-          .vk-copy-link {
-            font-size: 14px; color: #4a5fc1; font-weight: 600;
-            cursor: pointer; margin-bottom: 24px; background: none; border: none;
-            letter-spacing: 0.02em;
+            margin-bottom: 8px;
           }
           .vk-btn-primary {
             width: 100%; padding: 14px; border-radius: 50px;
@@ -244,23 +241,6 @@ function StatusScreen() {
             margin-bottom: 12px; transition: opacity 0.2s;
           }
           .vk-btn-primary:hover { opacity: 0.88; }
-          .vk-btn-wa {
-            width: 100%; padding: 13px; border-radius: 50px;
-            background: transparent; border: 1.5px solid #25d366;
-            color: #25d366; font-size: 15px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 8px;
-            transition: background 0.2s;
-          }
-          .vk-btn-wa:hover { background: rgba(37,211,102,0.08); }
-          .vk-expires {
-            font-size: 12px; color: #8892a4; margin-top: 16px;
-          }
-          .vk-expires-time { color: #4a5fc1; font-weight: 600; }
-          .vk-expired-label {
-            font-size: 13px; font-weight: 700; color: #e53e3e;
-            letter-spacing: 0.08em; margin-top: 6px;
-          }
           .vk-btn-regen {
             width: 100%; padding: 14px; border-radius: 50px;
             background: #1a2340; color: #fff; border: none;
@@ -268,21 +248,66 @@ function StatusScreen() {
             transition: opacity 0.2s;
           }
           .vk-btn-regen:hover { opacity: 0.88; }
+          .vk-btn-secondary {
+            width: 100%; padding: 14px; border-radius: 50px;
+            background: #f0f1f7; color: #1a2340; border: none;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+          }
+          .vk-btn-secondary:hover { background: #e2e4ef; }
+          
+          .vk-bottom-sheet {
+             position: absolute; bottom: 0; left: 0; right: 0;
+             background: #fff; border-top-left-radius: 24px; border-top-right-radius: 24px;
+             padding: 32px 24px 40px; transform: translateY(100%);
+             transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+             z-index: 20; box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+             display: flex; flex-direction: column; align-items: center;
+          }
+          .vk-bottom-sheet.open {
+             transform: translateY(0);
+          }
+          .vk-bs-close {
+             position: absolute; top: 16px; right: 16px;
+             background: #f0f1f7; border: none; border-radius: 50%;
+             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+             color: #1a2340; cursor: pointer;
+          }
 
-          /* Mobile: hide left panel */
+          /* Mobile Overrides */
           @media (max-width: 639px) {
-            .vk-left { display: none; }
-            .vk-right {
-              background: #fff;
-              padding: 0;
+            .vk-root { flex-direction: column; }
+            .vk-left { 
+              display: none;
+            }
+            .vk-left-sub { margin: 0 auto; }
+            .vk-dots { justify-content: center; margin-top: 32px; }
+            .vk-right { 
+              border-radius: 0;
+              margin-top: 0; z-index: 2; padding: 0;
+              overflow-y: auto; overflow-x: hidden;
             }
             .vk-card {
               max-width: 100%;
-              max-height: 100dvh;
-              height: 100dvh;
+              max-height: none;
+              height: auto;
               border-radius: 0;
               box-shadow: none;
+              padding: 10px 24px 60px;
+              margin: 0;
+              justify-content: flex-start;
             }
+            .vk-bottom-sheet {
+              position: fixed;
+            }
+          }
+          .vk-mascot {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; margin-bottom: 24px;
+          }
+          .vk-mascot-img {
+            width: 100%; max-width: 380px; height: auto; max-height: 45vh;
+            object-fit: contain; mix-blend-mode: darken; filter: contrast(1.1) brightness(1.2);
           }
         `}</style>
 
@@ -290,7 +315,10 @@ function StatusScreen() {
           {/* Left info panel */}
           <div className="vk-left">
             <div className="vk-badge"><div className="vk-badge-dot" /> OTP — ACTIVE</div>
-            <div className="vk-left-icon">🔐</div>
+            <svg className="vk-left-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '40px', height: '40px', color: 'rgba(255,255,255,0.9)' }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
             <h1 className="vk-left-title">Verify Kiosk</h1>
             <p className="vk-left-sub">Enter the code on the kiosk screen to authorize your print queue.</p>
             <div className="vk-dots">
@@ -303,33 +331,74 @@ function StatusScreen() {
 
           {/* Right content panel */}
           <div className="vk-right">
+            <div className="vk-header-container">
+              <AppHeader title="CampusPrint" subtitle="" hideBack />
+            </div>
+            
             <div className="vk-card">
-              <h2 className="vk-card-title">OTP Code</h2>
-              <div className="vk-otp-digits">
-                {otpDigits.map((d, i) => <span className="vk-otp-digit" key={i} style={{ color: expired ? '#a0aec0' : '#1a2340' }}>{d}</span>)}
+              <div className="vk-mascot">
+                <img src="/mascot.png" alt="CampusPrint Mascot" className="vk-mascot-img" />
               </div>
-              
-              {!expired ? (
+              <h2 className="vk-card-title">OTP Code</h2>
+              <p style={{ color: '#8892a4', fontSize: '14px', marginBottom: '32px' }}>Use this OTP to authorize your print queue at the kiosk.</p>
+
+              {!expired && (
+                <p style={{ color: '#8892a4', fontSize: '13px', marginBottom: '24px' }}>Expires in <span style={{ color: '#4a5fc1', fontWeight: 600 }}>{mins}:{secs}</span></p>
+              )}
+
+              {expired ? (
                 <>
-                  <button className="vk-copy-link" onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</button>
-                  <button className="vk-btn-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Download
-                  </button>
-                  <button className="vk-btn-wa">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                    </svg>
-                    Share via WhatsApp
-                  </button>
-                  <p className="vk-expires">Expires in <span className="vk-expires-time">{mins}:{secs}</span></p>
+                  <p style={{ color: '#e53e3e', fontWeight: 700, marginBottom: '24px', letterSpacing: '0.08em', fontSize: '13px' }}>EXPIRED</p>
+                  <button className="vk-btn-regen" onClick={() => generateOtp(printJobId!)} style={{ marginBottom: '12px' }}>Regenerate Code</button>
+                  <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
                 </>
               ) : (
                 <>
-                  <p className="vk-expired-label" style={{ marginBottom: '24px' }}>EXPIRED</p>
-                  <button className="vk-btn-regen" onClick={() => generateOtp(printJobId!)}>Regenerate Code</button>
+                  <button className="vk-btn-primary" onClick={() => setShowOTP(true)}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    View OTP Code
+                  </button>
+                  <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
                 </>
               )}
+
+              {/* OVERLAY for clicking outside to close bottom sheet */}
+              {showOTP && (
+                <div 
+                  onClick={() => setShowOTP(false)}
+                  style={{ position: 'absolute', inset: 0, zIndex: 5, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)', borderRadius: '24px' }}
+                />
+              )}
+
+              {/* Bottom Sheet */}
+              <div className={`vk-bottom-sheet ${showOTP ? 'open' : ''}`}>
+                <button className="vk-bs-close" onClick={() => setShowOTP(false)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+                
+                <h2 style={{ fontSize: '20px', color: '#1a2340', fontWeight: 700, marginBottom: '24px' }}>OTP Code</h2>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(12px,4vw,24px)', marginBottom: '12px' }}>
+                  {otpDigits.map((d, i) => (
+                    <span key={i} style={{ fontSize: 'clamp(36px,10vw,52px)', fontWeight: 700, color: '#1a2340', lineHeight: 1 }}>{d}</span>
+                  ))}
+                </div>
+                
+                <button 
+                  onClick={handleCopy}
+                  style={{ fontSize: '14px', color: '#4a5fc1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', marginBottom: '24px', letterSpacing: '0.02em' }}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+
+                <button style={{ width: '100%', padding: '14px', borderRadius: '50px', background: '#1a2340', color: '#fff', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px', transition: 'opacity 0.2s' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Download
+                </button>
+                <button style={{ width: '100%', padding: '13px', borderRadius: '50px', background: 'transparent', border: '1.5px solid #25d366', color: '#25d366', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background 0.2s' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                  Share via WhatsApp
+                </button>
+              </div>
             </div>
           </div>
         </div>

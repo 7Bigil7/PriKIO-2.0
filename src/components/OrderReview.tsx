@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AppHeader from "./AppHeader";
 
 export interface OrderReviewProps {
   files?: Array<{ id: string; fileName: string; pageCount: number; fileSizeMb: string }>;
@@ -71,7 +72,7 @@ export default function OrderReview({
           font-weight: 700;
           color: #1a2340;
           margin: 0 0 10px;
-          font-family: 'Playfair Display', Georgia, serif;
+          font-family: 'Quicksand', sans-serif;
         }
 
         .or-edit-btn {
@@ -149,9 +150,8 @@ export default function OrderReview({
 
       <div className="or-card" style={{
         background: "white",
-        borderRadius: "20px",
-        boxShadow: "0 4px 32px rgba(26,35,64,0.09)",
-        width: "min(440px, 100%)",
+        width: "100%",
+        height: "100%",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -159,17 +159,11 @@ export default function OrderReview({
       }}>
 
         {/* ── Header ── */}
-        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid #f0f1f7", display: "flex", alignItems: "center", position: "relative" }}>
-          <button onClick={onEdit} style={{ position: "absolute", left: "1.5rem", background: "none", border: "none", fontSize: "0.88rem", color: "#4a5fc1", cursor: "pointer", fontWeight: 600, fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
-            ← Back
-          </button>
-          <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "#1a2340", width: "100%", textAlign: "center" }}>
-            Review Your Order
-          </span>
-        </div>
+        <AppHeader title="CampusPrint" subtitle="Print Anywhere on Campus" onBack={onEdit} />
 
-        {/* ── Scrollable body ── */}
-        <div style={{ padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", maxHeight: "70vh" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto" }}>
+          <div style={{ width: "100%", maxWidth: "440px", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            <h2 style={{ margin: "0 0 0 0", textAlign: "center", fontSize: "1.4rem", fontWeight: 700, color: "#1a2340", fontFamily: "'Quicksand', sans-serif" }}>Review Your Order</h2>
 
           {/* ── Uploaded Files ── */}
           <div>
@@ -279,17 +273,20 @@ export default function OrderReview({
             </div>
           </div>
 
-        </div>
-
-        {/* ── Sticky footer ── */}
-        <div className="or-footer">
-          <div className="or-footer-left">
-            Total {totalFilePages} page{totalFilePages !== 1 ? "s" : ""}
-            <strong>₹ {grandTotal.toFixed(2)}</strong>
           </div>
-          <button className="or-proceed" style={{ width: "auto", padding: "13px 28px" }} onClick={onProceed}>
-            Proceed to Pay
-          </button>
+
+          {/* ── Sticky footer ── */}
+          <div style={{ width: "100%", maxWidth: "440px", marginTop: "auto" }}>
+            <div className="or-footer">
+              <div className="or-footer-left">
+                Total {totalFilePages} page{totalFilePages !== 1 ? "s" : ""}
+                <strong>₹ {grandTotal.toFixed(2)}</strong>
+              </div>
+              <button className="or-proceed" style={{ width: "auto", padding: "13px 28px" }} onClick={onProceed}>
+                Proceed to Pay
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>

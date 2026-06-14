@@ -7,6 +7,7 @@ import './desktop-landing.css'
 export default function LandingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -26,7 +27,7 @@ export default function LandingPage() {
   const handleSignIn = () => {
     setLoading(true)
     setTimeout(() => {
-      router.push('/upload')
+      router.push('/scan')
     }, 500)
   }
 
@@ -34,43 +35,80 @@ export default function LandingPage() {
     <>
       <div className="desktop-only-landing">
         
-<section className="hero">
+        {/* Top Navigation Bar */}
+        <header className="top-nav-pill">
+          <button className="menu-btn" onClick={() => setMenuOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
 
-  
-  <div className="wm" aria-hidden="true">P</div>
+          <button className="account-btn" onClick={() => router.push('/auth/login')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+        </header>
 
-  
-  <div className="ring-canvas" aria-hidden="true">
-    <div className="ring-outer"></div>
-    <div className="ring-inner"></div>
-    <div className="ring-core"></div>
-  </div>
+        {/* Menu Overlay */}
+        {menuOpen && (
+          <div className="menu-overlay">
+            <div className="menu-card">
+              <div className="menu-header">
+                <button className="close-btn" onClick={() => setMenuOpen(false)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <div className="menu-links">
+                <a href="#">About Us</a>
+                <a href="#">Features</a>
+                <a href="#">Franchise</a>
+                <a href="#">Contact Us</a>
+              </div>
+            </div>
+          </div>
+        )}
 
-  
-  <div className="logo-row">
-    <img src="/logo.png" alt="Presidency University" className="real-logo" />
-  </div>
+        <section className="hero">
+          <div className="hero-top-elements">
+            <div className="hero-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <span>OFFICIAL ON-CAMPUS PRINTING SERVICE</span>
+            </div>
+          </div>
 
-  
-  <div className="hero-content">
-    <h1 className="hero-headline">
-      Digital Thoughts<br/>
-      <span className="accent-italic">&amp; Physical</span> Reality
-    </h1>
-    <p className="hero-sub">
-      The official on-campus printing service for modern academics.
-    </p>
-    <div className="hero-cta-row">
-      <button className="btn-primary" onClick={handleSignIn} disabled={loading}>
-        {loading ? "Loading..." : "Start Testing (Bypass Auth)"}
-      </button>
-      <button className="btn-ghost">
-        Learn More
-      </button>
-    </div>
-  </div>
 
-</section>
+          <div className="ring-canvas" aria-hidden="true">
+            <div className="ring-outer"></div>
+            <div className="ring-inner"></div>
+            <div className="ring-core"></div>
+          </div>
+
+          <div className="logo-row">
+            <img src="/logo.png" alt="Presidency University" className="real-logo" />
+          </div>
+
+          <div className="hero-content">
+            <h1 className="hero-headline">
+              Digital Thoughts<br/>
+              <span className="accent-italic">&amp; Physical</span> Reality
+            </h1>
+            <p className="hero-sub">
+              Your fast, secure, and hassle-free on-campus printing solution.
+            </p>
+            <div className="hero-cta-row">
+              <button className="btn-primary" onClick={handleSignIn} disabled={loading}>
+                {loading ? "Loading..." : "Print Now ↗"}
+              </button>
+            </div>
+          </div>
+        </section>
 
 
 <section className="workflow">
@@ -145,32 +183,26 @@ export default function LandingPage() {
 </section>
 
 
-<section className="rates">
-  <div className="section-label">Standard Rates</div>
+<section className="faq-section" style={{ padding: '80px 8vw', background: 'var(--bg)' }}>
+  <div className="section-label">FAQ</div>
+  
+  <div className="faq-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '800px', margin: '0 auto' }}>
+    
+    <div className="faq-item" style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', background: '#FAFAFA' }}>
+      <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '18px', fontWeight: 700, color: 'var(--navy)', marginBottom: '8px' }}>How do I pay for my prints?</h3>
+      <p style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '15px', color: '#8892a4', lineHeight: 1.6, fontWeight: 500 }}>We support UPI, Netbanking, and pre-loaded Academic Credits. All payments are securely processed and your print job begins immediately upon confirmation.</p>
+    </div>
 
-  <div className="rates-card">
-    <div className="rates-header">Academic Year 2024 / 25</div>
-    <table className="rates-table" aria-label="Printing rate card">
-      <tbody>
-        <tr>
-          <td>B&amp;W — Single Sided</td>
-          <td>₹ 2.00</td>
-        </tr>
-        <tr>
-          <td>B&amp;W — Double Sided</td>
-          <td>₹ 3.50</td>
-        </tr>
-        <tr>
-          <td>Colour — Standard</td>
-          <td>₹ 8.00</td>
-        </tr>
-        <tr>
-          <td>Colour — Glossy / Presentation</td>
-          <td>₹ 15.00</td>
-        </tr>
-      </tbody>
-    </table>
-    <div className="rates-footnote">* Faculty members receive 50 complimentary credits per month.</div>
+    <div className="faq-item" style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', background: '#FAFAFA' }}>
+      <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '18px', fontWeight: 700, color: 'var(--navy)', marginBottom: '8px' }}>What formats are supported?</h3>
+      <p style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '15px', color: '#8892a4', lineHeight: 1.6, fontWeight: 500 }}>We currently support PDF, DOCX, PPTX, JPG, and PNG files. We highly recommend converting your documents to PDF before uploading to ensure perfect formatting.</p>
+    </div>
+
+    <div className="faq-item" style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '24px', background: '#FAFAFA' }}>
+      <h3 style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '18px', fontWeight: 700, color: 'var(--navy)', marginBottom: '8px' }}>Where are the kiosks located?</h3>
+      <p style={{ fontFamily: 'Quicksand, sans-serif', fontSize: '15px', color: '#8892a4', lineHeight: 1.6, fontWeight: 500 }}>You can find CampusPrint kiosks in the Main Library, Student Union Building, Science Block A, and the Engineering Wing. Check the Kiosk Map for real-time availability.</p>
+    </div>
+
   </div>
 </section>
 
@@ -204,26 +236,6 @@ export default function LandingPage() {
     &copy; 2025 Presidency University · All rights reserved
   </div>
 </footer>
-
-
-<nav className="sticky-bar" aria-label="Quick navigation">
-  
-  <button className="bar-icon-btn" aria-label="Menu">
-    <svg viewBox="0 0 24 24"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
-  </button>
-
-  <div className="bar-divider"></div>
-
-  
-  <button className="bar-cta">Scan QR to Print</button>
-
-  <div className="bar-divider"></div>
-
-  
-  <button className="bar-icon-btn" aria-label="Profile">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20 C4 16 8 13 12 13 C16 13 20 16 20 20"/></svg>
-  </button>
-</nav>
       </div>
     </>
   )

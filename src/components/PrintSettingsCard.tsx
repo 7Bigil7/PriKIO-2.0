@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import AppHeader from "./AppHeader";
 
 // ── pricing ──────────────────────────────────────────────────────────────────
 const PRICE = { bw: 1, color: 3, serviceFee: 2 };
@@ -12,12 +13,14 @@ interface PrintSettingsCardProps {
   }>;
   onConfirm?: (settings: any) => void;
   onPreviewClick?: (fileId: string) => void;
+  onBack?: () => void;
 }
 
 export default function PrintSettingsCard({
   files = [],
   onConfirm  = () => {},
   onPreviewClick = () => {},
+  onBack,
 }: PrintSettingsCardProps) {
   const [colorMode,    setColorMode]    = useState("bw");      // "bw" | "color"
   const [layout,       setLayout]       = useState("duplex");  // "simplex" | "duplex"
@@ -214,9 +217,8 @@ export default function PrintSettingsCard({
 
       <div className="ps-card" style={{
         background: "white",
-        borderRadius: "20px",
-        boxShadow: "0 4px 32px rgba(26,35,64,0.09)",
-        width: "min(440px, 100%)",
+        width: "100%",
+        height: "100%",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -224,12 +226,11 @@ export default function PrintSettingsCard({
       }}>
 
         {/* ── Header ── */}
-        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid #f0f1f7", display: "flex", alignItems: "center", position: "relative" }}>
-          <button onClick={() => window.history.back()} style={{ background: "none", border: "none", fontSize: "1.5rem", color: "#1a2340", cursor: "pointer", lineHeight: 1, position: "absolute", left: "1.5rem" }}>‹</button>
-          <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.15rem", fontWeight: 600, color: "#1a2340", width: "100%", textAlign: "center" }}>Print Settings</span>
-        </div>
+        <AppHeader title="CampusPrint" subtitle="Print Anywhere on Campus" onBack={onBack || (() => window.history.back())} />
 
-        <div style={{ padding: "1.25rem 1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem", overflowY: "auto", maxHeight: "75vh" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto" }}>
+          <div style={{ width: "100%", maxWidth: "440px", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            <h2 style={{ margin: "0 0 0 0", textAlign: "center", fontSize: "1.4rem", fontWeight: 700, color: "#1a2340", fontFamily: "'Quicksand', sans-serif" }}>Print Settings</h2>
 
           {/* ── Selected files ── */}
           <div>
@@ -247,13 +248,29 @@ export default function PrintSettingsCard({
                     <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 600, color: "#1a2340", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.fileName}</p>
                     <p style={{ margin: 0, fontSize: "0.75rem", color: "#aaa", marginTop: "2px" }}>
                       {(file as any).pagesToPrint && (file as any).pagesToPrint !== "All"
-                        ? `Selected: ${(file as any).pagesToPrint} (${file.pageCount} Total Pages)`
+                        ? `${parsePagesToPrint((file as any).pagesToPrint, file.pageCount)} Selected (${file.pageCount} Total Pages)`
                         : `${file.pageCount} Pages`} · {parseFloat(file.fileSizeMb || '0').toFixed(2)} MB
                     </p>
                   </div>
                   {/* eye icon — preview */}
-                  <button onClick={() => onPreviewClick(file.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", padding: "4px" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <button 
+                    onClick={() => onPreviewClick(file.id)} 
+                    style={{ 
+                      background: "rgba(26,35,64,0.05)", 
+                      border: "1px solid rgba(26,35,64,0.1)", 
+                      borderRadius: "8px",
+                      cursor: "pointer", 
+                      color: "#1a2340", 
+                      padding: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(26,35,64,0.1)"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "rgba(26,35,64,0.05)"}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </button>
                 </div>
               ))}
@@ -355,19 +372,22 @@ export default function PrintSettingsCard({
             </div>
           </div>
 
-        </div>
-
-        {/* ── Cost summary + CTA ── */}
-        <div style={{ padding: "1.25rem 1.5rem", borderTop: "1px solid #f0f1f7" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", fontSize: "0.95rem", color: "#555" }}>
-            <span>{sheetsNeeded * copies} Sheet{sheetsNeeded * copies !== 1 ? 's' : ''}</span>
-            <span>₹ {printCost.toFixed(2)}</span>
           </div>
 
-          <button className="confirm-btn" onClick={handleConfirm}>
-            <span>Confirm & Pay</span>
-            <span className="confirm-badge">₹ {printCost.toFixed(2)}</span>
-          </button>
+          {/* ── Cost summary + CTA ── */}
+          <div style={{ width: "100%", maxWidth: "440px", padding: "0 1.5rem 1.5rem", marginTop: "auto" }}>
+            <div style={{ paddingTop: "1.25rem", borderTop: "1px solid #f0f1f7" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px", fontSize: "0.95rem", color: "#555" }}>
+                <span>{sheetsNeeded * copies} Sheet{sheetsNeeded * copies !== 1 ? 's' : ''}</span>
+                <span>₹ {printCost.toFixed(2)}</span>
+              </div>
+
+              <button className="confirm-btn" onClick={handleConfirm}>
+                <span>Confirm & Pay</span>
+                <span className="confirm-badge">₹ {printCost.toFixed(2)}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>

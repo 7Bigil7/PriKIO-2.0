@@ -3,13 +3,16 @@
 import { useState, useRef } from "react"
 import { useRouter } from 'next/navigation'
 import { usePrintStore } from '@/store/usePrintStore'
+import AppHeader from '@/components/AppHeader'
 
 export default function UploadScreen() {
   const router = useRouter()
   const [files, setFiles] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadIndex, setUploadIndex] = useState(1)
   const inputRef = useRef<HTMLInputElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const handleFiles = (incoming: FileList | File[]) => {
     const arr = Array.from(incoming).map((f) => ({
@@ -41,10 +44,13 @@ export default function UploadScreen() {
     if (files.length === 0) return
     setUploading(true)
     setUploadProgress(0)
+    setUploadIndex(1)
+    abortControllerRef.current = new AbortController()
 
     try {
       const results = []
       for (let i = 0; i < files.length; i++) {
+        setUploadIndex(i + 1)
         const item = files[i]
         const formData = new FormData()
         formData.append('file', item.file)
@@ -59,6 +65,7 @@ export default function UploadScreen() {
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
+          signal: abortControllerRef.current.signal
         })
         
         clearInterval(interval)
@@ -89,15 +96,27 @@ export default function UploadScreen() {
       }, 500)
 
     } catch (err: any) {
-      console.error(err)
+      if (err.name === 'AbortError') {
+        console.log('Upload cancelled')
+      } else {
+        console.error(err)
+      }
       setUploading(false)
     }
   }
 
+  const cancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+    setUploading(false)
+    setUploadProgress(0)
+  }
+
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Quicksand:wght@400;500;600;700&display=swap');
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
         
         .up-root {
           height: 100vh;
@@ -128,7 +147,7 @@ export default function UploadScreen() {
         }
         .up-left-icon { font-size: 32px; margin-bottom: 20px; opacity: 0.7; }
         .up-left-title {
-          font-family: 'Playfair Display', serif !important;
+          font-family: 'Quicksand', sans-serif !important;
           font-size: clamp(28px,3.5vw,42px); color: #fff;
           margin-bottom: 16px; line-height: 1.2;
         }
@@ -139,40 +158,43 @@ export default function UploadScreen() {
 
         /* Right panel */
         .up-right {
-          flex: 1; background: #f0f2f5;
+          flex: 1; background: #ffffff;
           display: flex; align-items: center; justify-content: center;
-          padding: clamp(16px,3vw,40px); overflow: hidden;
+          padding: 0; overflow: hidden;
         }
 
         /* Card */
         .up-card {
-          background: #fff; border-radius: 20px;
-          width: 100%; max-width: 400px;
+          background: #fff; border-radius: 0;
+          width: 100%; height: 100%;
           display: flex; flex-direction: column;
-          overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.10);
-          max-height: calc(100vh - 80px);
+          overflow: hidden; box-shadow: none;
         }
 
         /* Card header */
         .up-card-header {
-          display: flex; align-items: center;
-          padding: 20px 20px 0; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px 20px 0; flex-shrink: 0; position: relative;
         }
         .up-back {
-          background: none; border: none; font-size: 20px;
-          color: #1a2340; cursor: pointer; padding: 4px 8px 4px 0;
+          background: none; border: none; font-size: 28px; line-height: 1;
+          color: #1a2340; cursor: pointer; padding: 4px;
+          position: absolute; left: 16px; top: 16px;
         }
         .up-card-title {
-          flex: 1; text-align: center;
-          font-family: 'Playfair Display', serif !important;
-          font-style: italic; font-size: 20px; color: #1a2340;
-          margin-right: 28px;
+          text-align: center; width: 100%;
+          font-family: 'Quicksand', sans-serif !important;
+          font-style: italic; font-size: 1.25rem; font-weight: 600; color: #1a2340;
         }
 
         /* Scrollable body */
         .up-card-body {
-          flex: 1; overflow-y: auto; padding: 20px 20px 0;
+          flex: 1; overflow-y: auto; padding: 80px 20px 0;
           -webkit-overflow-scrolling: touch;
+          display: flex; flex-direction: column; align-items: center;
+        }
+        .up-card-inner {
+          width: 100%; max-width: 440px; display: flex; flex-direction: column; flex: 1;
         }
 
         /* Empty Dropzone / Illustration */
@@ -182,7 +204,7 @@ export default function UploadScreen() {
           padding: 30px 20px; text-align: center;
         }
         .up-headline {
-          font-family: 'Playfair Display', serif !important;
+          font-family: 'Quicksand', sans-serif !important;
           font-size: 28px; font-weight: 600; color: #1a2340;
           margin: 20px 0 12px; line-height: 1.2;
         }
@@ -191,13 +213,13 @@ export default function UploadScreen() {
           max-width: 260px; margin-bottom: 24px;
         }
         .up-select-btn {
-          background: #EEF2FF; color: #2B4EAA;
+          background: #f0f1f7; color: #1a2340;
           border: none; padding: 12px 24px; border-radius: 50px;
           font-size: 15px; font-weight: 700; cursor: pointer;
           display: inline-flex; align-items: center; gap: 8px;
           transition: background 0.2s, transform 0.1s;
         }
-        .up-select-btn:hover { background: #e0e7ff; transform: scale(1.02); }
+        .up-select-btn:hover { background: #e2e4ef; transform: scale(1.02); }
 
         .up-hint {
           display: flex; align-items: center; gap: 6px;
@@ -209,25 +231,30 @@ export default function UploadScreen() {
         .up-add-more {
           display: flex; align-items: center; justify-content: center; gap: 8px;
           padding: 12px 16px; border-radius: 12px;
-          border: 1.5px dashed #cbd5e1; cursor: pointer;
-          font-size: 14px; color: #2B4EAA; font-weight: 700;
+          border: 2.5px dashed #1a2340; cursor: pointer;
+          font-size: 14px; color: #1a2340; font-weight: 700;
           margin-bottom: 16px; background: #fff; width: max-content;
           transition: border-color 0.2s;
         }
-        .up-add-more:hover { border-color: #2B4EAA; }
+        .up-add-more:hover { border-color: #1a2340; }
 
         /* File cards */
         .up-file-card {
-          background: #fff; border-radius: 16px;
+          background: rgba(255, 255, 255, 0.65);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-radius: 16px;
           padding: 16px; margin-bottom: 12px;
           display: flex; align-items: flex-start; gap: 14px;
-          border: 1.5px solid #e2e8f0; position: relative;
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+          position: relative;
         }
         .up-file-icon {
           width: 44px; height: 44px; border-radius: 10px;
-          background: #f1f5f9; display: flex;
+          background: #f0f1f7; display: flex;
           align-items: center; justify-content: center;
-          font-size: 20px; flex-shrink: 0;
+          flex-shrink: 0; border: 1px solid rgba(26,35,64,0.08);
         }
         .up-file-info { flex: 1; min-width: 0; padding-right: 20px; }
         .up-file-name {
@@ -270,7 +297,7 @@ export default function UploadScreen() {
         .up-chevron { font-size: 12px; color: #a0aec0; }
 
         /* Footer */
-        .up-footer { padding: 14px 20px 20px; flex-shrink: 0; }
+        .up-footer { padding: 14px 20px 20px; flex-shrink: 0; width: 100%; max-width: 440px; margin: 0 auto; }
         .up-btn-upload {
           width: 100%; padding: 15px; border-radius: 50px;
           background: #1a2340;
@@ -341,6 +368,81 @@ export default function UploadScreen() {
         .up-counter-btn:hover { border-color: #4a5fc1; }
         .up-counter-val { font-size: 28px; font-weight: 700; color: #1a2340; min-width: 32px; text-align: center; }
 
+        /* Upload Modal Styles */
+        .up-upload-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+          display: flex; align-items: flex-end; justify-content: center;
+          z-index: 300;
+          animation: fadeIn 0.2s ease-out;
+          backdrop-filter: blur(2px);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @media (min-width: 640px) {
+          .up-upload-overlay { align-items: center; }
+          .up-upload-modal { border-radius: 24px !important; max-width: 400px !important; }
+        }
+        .up-upload-modal {
+          background: #f8f9fa; border-radius: 24px 24px 0 0;
+          padding: 32px 24px; width: 100%; max-width: 100%;
+          display: flex; flex-direction: column; align-items: center;
+          animation: modalSlideUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        }
+        @keyframes modalSlideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .up-folder-anim {
+          width: 56px; height: 56px; margin-bottom: 20px;
+          display: flex; align-items: center; justify-content: center;
+          animation: float 2s infinite ease-in-out;
+        }
+        .up-folder-anim svg {
+          width: 100%; height: 100%; color: #1a2340; /* Brand blue folder color */
+          filter: drop-shadow(0 4px 6px rgba(26,35,64,0.2));
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .up-upload-title {
+          font-family: 'Quicksand', sans-serif !important;
+          font-size: 22px; font-weight: 700; color: #1a2340;
+          margin-bottom: 8px; text-align: center;
+        }
+        .up-upload-sub {
+          font-size: 14px; color: #64748b; text-align: center;
+          margin-bottom: 32px; line-height: 1.5; max-width: 280px;
+          font-weight: 500;
+        }
+        .up-upload-progress-info {
+          display: flex; justify-content: space-between; width: 100%;
+          font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 10px;
+        }
+        .up-upload-bar-bg {
+          width: 100%; height: 8px; background: #e2e8f0;
+          border-radius: 8px; overflow: hidden; margin-bottom: 12px;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .up-upload-bar-fill {
+          height: 100%; background: #1a2340; border-radius: 8px;
+          transition: width 0.3s ease;
+        }
+        .up-upload-note {
+          font-size: 12px; color: #94a3b8; font-style: italic;
+          margin-bottom: 32px; width: 100%; text-align: left;
+        }
+        .up-upload-cancel {
+          width: 100%; padding: 14px; border-radius: 14px;
+          background: #e2e8f0; color: #1e293b; border: none;
+          font-size: 15px; font-weight: 700; cursor: pointer;
+          transition: background 0.2s, transform 0.1s;
+        }
+        .up-upload-cancel:hover { background: #cbd5e1; transform: scale(0.98); }
+
         /* Mobile */
         @media (max-width: 768px) {
           .up-left { display: none; }
@@ -356,13 +458,52 @@ export default function UploadScreen() {
             box-shadow: none;
           }
         }
-      `}</style>
+      `}} />
+
+      {/* Upload Modal Overlay */}
+      {uploading && (
+        <div className="up-upload-overlay">
+          <div className="up-upload-modal">
+            {/* Animated folder icon */}
+            <div className="up-folder-anim">
+              <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V8C22 6.9 21.1 6 20 6H12L10 4Z"/>
+              </svg>
+            </div>
+            
+            <h2 className="up-upload-title">Uploading Files...</h2>
+            <p className="up-upload-sub">Please wait while we upload your files to the server.</p>
+            
+            <div className="up-upload-progress-info">
+              <span>Uploading {uploadIndex} of {files.length} File{files.length !== 1 ? 's' : ''}...</span>
+              <span>{Math.round(uploadProgress)}%</span>
+            </div>
+            
+            <div className="up-upload-bar-bg">
+              <div className="up-upload-bar-fill" style={{ width: `${Math.round(uploadProgress)}%` }}></div>
+            </div>
+            
+            <p className="up-upload-note">We delete your files once printed</p>
+            
+            <button 
+              className="up-upload-cancel" 
+              onClick={cancelUpload}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="up-root" onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
         {/* Left panel */}
         <div className="up-left">
           <div className="up-step">STEP 1 OF 3</div>
-          <div className="up-left-icon">🖨️</div>
+          <svg className="up-left-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '40px', height: '40px', color: 'rgba(255,255,255,0.9)' }}>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
           <h1 className="up-left-title">Upload Your Files</h1>
           <p className="up-left-sub">Select PDF, JPG or PNG files.</p>
           <div className="up-dots">
@@ -375,22 +516,19 @@ export default function UploadScreen() {
         {/* Right panel */}
         <div className="up-right">
           <div className="up-card">
-            {/* Header */}
-            <div className="up-card-header">
-              <button className="up-back" onClick={() => router.back()}>‹</button>
-              <span className="up-card-title">CampusPrint</span>
-            </div>
+            <AppHeader title="CampusPrint" subtitle="Print Anywhere on Campus" onBack={() => router.push('/scan')} />
 
             {/* Body */}
             <div className="up-card-body">
-              <input
-                ref={inputRef} type="file" multiple
-                accept=".pdf,.jpg,.jpeg,.png"
-                style={{ display: "none" }}
-                onChange={(e) => {
-                  if (e.target.files) handleFiles(e.target.files)
-                }}
-              />
+              <div className="up-card-inner">
+                <input
+                  ref={inputRef} type="file" multiple
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    if (e.target.files) handleFiles(e.target.files)
+                  }}
+                />
 
               {files.length === 0 ? (
                 /* Empty state */
@@ -407,12 +545,12 @@ export default function UploadScreen() {
                       <line x1="16" y1="80" x2="28" y2="80" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
                       <line x1="16" y1="86" x2="28" y2="86" stroke="#D1D5DB" strokeWidth="1.1" strokeLinecap="round"/>
                     </g>
-                    <rect x="24" y="46" width="92" height="42" rx="10" fill="#EEF2FF" stroke="#2B4EAA" strokeWidth="1.8"/>
+                    <rect x="24" y="46" width="92" height="42" rx="10" fill="#f0f1f7" stroke="#1a2340" strokeWidth="1.8"/>
                     <rect x="38" y="36" width="64" height="16" rx="5" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.5"/>
-                    <rect x="44" y="82" width="52" height="13" rx="3" fill="#fff" stroke="#2B4EAA" strokeWidth="1.5"/>
-                    <circle cx="96" cy="61" r="3" fill="#2B4EAA" opacity="0.7"/>
+                    <rect x="44" y="82" width="52" height="13" rx="3" fill="#fff" stroke="#1a2340" strokeWidth="1.5"/>
+                    <circle cx="96" cy="61" r="3" fill="#1a2340" opacity="0.7"/>
                     <circle cx="106" cy="61" r="3" fill="#E5E7EB"/>
-                    <line x1="38" y1="70" x2="102" y2="70" stroke="#2B4EAA" strokeWidth="1" strokeLinecap="round" opacity="0.25"/>
+                    <line x1="38" y1="70" x2="102" y2="70" stroke="#1a2340" strokeWidth="1" strokeLinecap="round" opacity="0.25"/>
                   </svg>
                   
                   <h2 className="up-headline">Ready to print?</h2>
@@ -429,7 +567,11 @@ export default function UploadScreen() {
                   {files.map((f) => (
                     <div className="up-file-card" key={f.id}>
                       <div className="up-file-icon">
-                        {f.name.endsWith(".pdf") ? "📄" : f.name.match(/\.(jpg|jpeg|png)$/i) ? "🖼️" : "📝"}
+                        {f.name.match(/\.(jpg|jpeg|png)$/i) ? (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a2340" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        ) : (
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a2340" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        )}
                       </div>
                       <div className="up-file-info">
                         <div className="up-file-name">{f.name}</div>
@@ -445,30 +587,19 @@ export default function UploadScreen() {
                 </>
               )}
 
-              <div className="up-hint">✓ Preview pages before you print</div>
-              <div className="up-formats">Accepted formats: PDF, JPG, PNG. Max 100MB per file</div>
-
+                <div className="up-hint">✓ Preview pages before you print</div>
+                <div className="up-formats">Accepted formats: PDF, JPG, PNG. Max 100MB per file</div>
+              </div>
             </div>
 
             {/* Footer */}
             <div className="up-footer">
-              {uploading && (
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#8892a4', marginBottom: '6px' }}>
-                    <span>Uploading...</span>
-                    <span>{Math.round(uploadProgress)}%</span>
-                  </div>
-                  <div style={{ height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: '#4a5fc1', transition: 'width 0.2s' }}></div>
-                  </div>
-                </div>
-              )}
               <button
                 className={`up-btn-upload${files.length > 0 && !uploading ? " active" : ""}`}
                 disabled={files.length === 0 || uploading}
                 onClick={handleContinue}
               >
-                {uploading ? "Processing..." : "Upload"}
+                Upload
                 {files.length > 0 && !uploading && <span className="up-badge">{files.length}</span>}
               </button>
             </div>

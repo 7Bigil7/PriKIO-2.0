@@ -145,8 +145,8 @@ export default function PaymentSuccess({
           zIndex: 9999,
           background: `
             radial-gradient(ellipse 55% 45% at 50% 36%,
-              rgba(34,197,94,0.20) 0%,
-              rgba(22,163,74,0.08) 45%,
+              rgba(74,95,193,0.20) 0%,
+              rgba(74,95,193,0.08) 45%,
               transparent 70%),
             #1a2340
           `,
@@ -187,7 +187,7 @@ export default function PaymentSuccess({
                 inset: "-32px",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, rgba(34,197,94,0.30) 0%, transparent 70%)",
+                  "radial-gradient(circle, rgba(74,95,193,0.30) 0%, transparent 70%)",
                 pointerEvents: "none",
               }}
             />
@@ -201,7 +201,7 @@ export default function PaymentSuccess({
                   position: "absolute",
                   inset: 0,
                   borderRadius: "50%",
-                  border: "2px solid rgba(34,197,94,0.55)",
+                  border: "2px solid rgba(74,95,193,0.55)",
                   pointerEvents: "none",
                 }}
               />
@@ -211,7 +211,7 @@ export default function PaymentSuccess({
                   position: "absolute",
                   inset: 0,
                   borderRadius: "50%",
-                  border: "2px solid rgba(34,197,94,0.35)",
+                  border: "2px solid rgba(74,95,193,0.35)",
                   pointerEvents: "none",
                 }}
               />
@@ -230,7 +230,7 @@ export default function PaymentSuccess({
               cy="60"
               r={CIRCLE_R}
               fill="none"
-              stroke="rgba(34,197,94,0.12)"
+              stroke="rgba(74,95,193,0.12)"
               strokeWidth="5"
             />
             <circle
@@ -238,7 +238,7 @@ export default function PaymentSuccess({
               cy="60"
               r={CIRCLE_R}
               fill="none"
-              stroke="#22c55e"
+              stroke="#4a5fc1"
               strokeWidth="5"
               strokeLinecap="round"
               strokeDasharray={CIRCLE_C}
@@ -248,13 +248,13 @@ export default function PaymentSuccess({
                 transition: prefersReduced
                   ? "none"
                   : "stroke-dashoffset 0.65s cubic-bezier(0.65,0,0.35,1)",
-                filter: phase >= 3 ? "drop-shadow(0 0 8px #22c55e)" : "none",
+                filter: phase >= 3 ? "drop-shadow(0 0 8px #4a5fc1)" : "none",
               }}
             />
             <polyline
               points="36,62 52,78 84,44"
               fill="none"
-              stroke="#22c55e"
+              stroke="#ffffff"
               strokeWidth="6"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -264,7 +264,7 @@ export default function PaymentSuccess({
                 transition: prefersReduced
                   ? "none"
                   : "stroke-dashoffset 0.45s cubic-bezier(0.65,0,0.35,1)",
-                filter: phase >= 3 ? "drop-shadow(0 0 5px #22c55e)" : "none",
+                filter: phase >= 3 ? "drop-shadow(0 0 5px #ffffff)" : "none",
               }}
             />
           </svg>
@@ -326,11 +326,11 @@ export default function PaymentSuccess({
           }}
         >
           <svg width="15" height="15" viewBox="0 0 16 16">
-            <circle cx="8" cy="8" r="7" fill="#22c55e" opacity="0.18" />
+            <circle cx="8" cy="8" r="7" fill="#4a5fc1" opacity="0.18" />
             <polyline
               points="4,8 7,11 12,5"
               fill="none"
-              stroke="#22c55e"
+              stroke="#4a5fc1"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -341,7 +341,7 @@ export default function PaymentSuccess({
               fontSize: "0.68rem",
               fontWeight: 700,
               letterSpacing: "0.14em",
-              color: "#22c55e",
+              color: "#4a5fc1",
               textTransform: "uppercase",
             }}
           >
@@ -383,7 +383,7 @@ export default function PaymentSuccess({
               {merchantName}
             </span>
             <span
-              style={{ fontWeight: 700, color: "#22c55e", fontSize: "0.95rem" }}
+              style={{ fontWeight: 700, color: "#4a5fc1", fontSize: "0.95rem" }}
             >
               ₹ {amount}
             </span>
@@ -418,7 +418,7 @@ export default function PaymentSuccess({
                     height="13"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#22c55e"
+                    stroke="#4a5fc1"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                   >
@@ -480,6 +480,36 @@ export default function PaymentSuccess({
             </span>
           </div>
         </div>
+
+        {/* Continue Button */}
+        <button
+          onClick={onRedirect}
+          style={{
+            marginTop: "1.5rem",
+            padding: "12px 28px",
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            borderRadius: "9999px",
+            color: "white",
+            fontSize: "0.95rem",
+            fontWeight: 600,
+            cursor: "pointer",
+            backdropFilter: "blur(4px)",
+            transition: prefersReduced ? "none" : "all 0.2s ease",
+            opacity: btnVisible ? 1 : 0,
+            transform: btnVisible ? "translateY(0)" : "translateY(20px)",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.2)";
+            e.currentTarget.style.transform = btnVisible ? "translateY(-2px)" : "translateY(20px)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+            e.currentTarget.style.transform = btnVisible ? "translateY(0)" : "translateY(20px)";
+          }}
+        >
+          Continue
+        </button>
       </div>
     </>
   );

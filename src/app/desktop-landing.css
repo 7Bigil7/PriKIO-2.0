@@ -1,5 +1,5 @@
 .desktop-only-landing {
-  background: #FFFFFF;
+  background: #f0f3f8;
   min-height: 100dvh;
   overflow-x: hidden;
   color: #0D1F3C;
@@ -13,5 +13,5 @@
 body:has(.desktop-only-landing) {
   padding: 0;
   margin: 0;
-  background: #FFFFFF;
+  background: #f0f3f8;
 }

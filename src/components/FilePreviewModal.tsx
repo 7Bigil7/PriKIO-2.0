@@ -79,7 +79,7 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
       ref={containerRef}
       onClick={() => onToggle(pageNum)}
       style={{
-        border: selected ? '4px solid var(--accent)' : '1px solid var(--border)',
+        border: selected ? '4px solid #1a2340' : '1px solid var(--border)',
         borderRadius: '12px',
         overflow: 'hidden',
         position: 'relative',
@@ -93,7 +93,7 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
         maxWidth: '650px',
         minHeight: '400px',
         margin: '0 auto',
-        boxShadow: selected ? '0 8px 24px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.05)'
+        boxShadow: selected ? '0 8px 24px rgba(26,35,64,0.15)' : '0 2px 8px rgba(0,0,0,0.05)'
       }}
     >
       <canvas ref={canvasRef} style={{ width: '100%', maxWidth: '100%', display: 'block' }} />
@@ -103,11 +103,11 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
       
       {/* Checkbox indicator */}
       {selected ? (
-        <div style={{ position: 'absolute', top: 16, right: 16, background: 'var(--accent)', color: '#fff', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style={{ position: 'absolute', top: 12, right: 12, background: '#1a2340', color: '#fff', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(26,35,64,0.3)' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
       ) : (
-        <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.9)', border: '2.5px solid var(--grey-mid)', borderRadius: '50%', width: '36px', height: '36px', transition: 'all 0.2s' }}>
+        <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(0,0,0,0.15)', borderRadius: '50%', width: '28px', height: '28px', transition: 'all 0.2s' }}>
         </div>
       )}
     </div>

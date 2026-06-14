@@ -72,23 +72,16 @@ export default function ReviewPage() {
     <div className="page-root">
       <div className="desktop-left-panel">
         <div className="dlp-step-pill">Step 3 of 4</div>
-        <svg className="dlp-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="24" cy="24" r="16" stroke="white" strokeWidth="1.8"/>
-          <path d="M16 24h16" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M16 18h16" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M16 30h16" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="32" cy="18" r="2.5" fill="white" opacity="0.9"/>
-          <circle cx="20" cy="24" r="2.5" fill="white" opacity="0.9"/>
-          <circle cx="28" cy="30" r="2.5" fill="white" opacity="0.9"/>
+        <svg className="dlp-icon" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '40px', height: '40px' }}>
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          <path d="M9 14h6"></path>
+          <path d="M9 18h6"></path>
+          <path d="M9 10h.01"></path>
         </svg>
         <h2 className="dlp-heading">Review Your Order</h2>
         <p className="dlp-sub">Check your print settings and select your kiosk before payment.</p>
-        {files.length > 0 && (
-          <div className="dlp-file-badge">
-            <span className="dlp-file-icon">📄</span>
-            <span className="dlp-file-name">{files.length} {files.length === 1 ? 'File' : 'Files'} Selected</span>
-          </div>
-        )}
+
         <hr className="dlp-divider" />
         <div className="dlp-dots">
           <span className="dlp-dot active"></span>
@@ -98,9 +91,8 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      <div className="desktop-right-panel">
-        <div className="screen-tag">Step 3 — Order Review</div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, padding: '20px' }}>
+      <div className="desktop-right-panel" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%' }}>
           <OrderReview
             files={files as any}
             copies={settings.copies}
