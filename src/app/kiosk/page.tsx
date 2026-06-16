@@ -10,21 +10,21 @@ export default function Kiosk() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (otp.length < 6) return
+    if (otp.length < 4) return
     setVerifying(true)
     setError('')
 
     try {
-      const res = await fetch('/api/otp/verify', {
+      const res = await fetch('/api/fastapi/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp, kioskId: 'LIB-04' })
+        body: JSON.stringify({ otp_entered: otp })
       })
       const result = await res.json()
-      if (res.ok) {
-        setSuccessData(result.data.printJob)
+      if (res.ok && result.success) {
+        setSuccessData({ file_name: "Document", page_count: 1, color_mode: "B&W", sides: "Single" })
       } else {
-        setError(result.error)
+        setError(result.message || 'Invalid OTP')
       }
     } catch (err: any) {
       setError(err.message || 'Verification failed')
@@ -92,21 +92,21 @@ export default function Kiosk() {
         ) : (
           <div style={{ position: 'absolute', inset: '120px 0 0 0', background: 'rgba(255, 255, 255, 0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: '80px', fontWeight: 600, color: 'var(--gd)', marginBottom: '24px' }}>Enter <i style={{ color: 'var(--accent)', fontStyle: 'italic' }}>OTP Code</i></h1>
-            <p style={{ fontSize: '24px', fontWeight: 300, color: 'var(--grey-mid)', lineHeight: 1.5, textAlign: 'center', marginBottom: '60px' }}>Enter the 6-digit code shown on your phone to release your prints.</p>
+            <p style={{ fontSize: '24px', fontWeight: 300, color: 'var(--grey-mid)', lineHeight: 1.5, textAlign: 'center', marginBottom: '60px' }}>Enter the 4-digit code shown on your phone to release your prints.</p>
             
             <form onSubmit={handleVerify} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
               <input 
                 type="text" 
                 value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                placeholder="000000"
+                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))}
+                placeholder="0000"
                 style={{ fontSize: '64px', fontFamily: 'var(--serif)', letterSpacing: '0.2em', textAlign: 'center', border: '2px solid var(--border)', borderRadius: '24px', padding: '20px 40px', width: '400px', outline: 'none', color: 'var(--gd)' }}
               />
               {error && <p style={{ color: 'var(--red)', fontSize: '24px' }}>{error}</p>}
               <button 
                 type="submit" 
-                disabled={otp.length !== 6 || verifying}
-                style={{ background: 'var(--navy)', color: '#fff', padding: '24px 60px', borderRadius: '9999px', fontSize: '24px', fontWeight: 600, border: 'none', cursor: otp.length === 6 && !verifying ? 'pointer' : 'not-allowed', opacity: otp.length === 6 && !verifying ? 1 : 0.7 }}
+                disabled={otp.length !== 4 || verifying}
+                style={{ background: 'var(--navy)', color: '#fff', padding: '24px 60px', borderRadius: '9999px', fontSize: '24px', fontWeight: 600, border: 'none', cursor: otp.length === 4 && !verifying ? 'pointer' : 'not-allowed', opacity: otp.length === 4 && !verifying ? 1 : 0.7 }}
               >
                 {verifying ? 'Verifying...' : 'Verify Print Job'}
               </button>

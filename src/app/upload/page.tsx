@@ -62,7 +62,7 @@ export default function UploadScreen() {
           setUploadProgress((prev) => Math.min(prev + fileProgressStep * 0.1, fileProgressBase + fileProgressStep * 0.9))
         }, 100)
 
-        const response = await fetch('/api/upload', {
+        const response = await fetch('/api/fastapi/upload', {
           method: 'POST',
           body: formData,
           signal: abortControllerRef.current.signal
@@ -79,7 +79,7 @@ export default function UploadScreen() {
 
         results.push({ 
           id: Math.random().toString(36).substring(7),
-          ...result.data, 
+          ...result, 
           pagesToPrint: item.pagesToPrint,
           originalFile: item.file,
           fileBuffer: buffer
@@ -88,9 +88,11 @@ export default function UploadScreen() {
 
       setUploadProgress(100)
       usePrintStore.getState().setFiles(results)
+      if (results.length > 0) {
+        usePrintStore.getState().setJobData(results[0].job_id, results[0].otp)
+      }
       
-      // We don't save copies/colorMode here anymore since it's removed.
-      // We just push to the next step.
+      // Redirect to the print settings page to continue the UI flow
       setTimeout(() => {
         router.push('/print-settings')
       }, 500)

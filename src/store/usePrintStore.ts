@@ -13,7 +13,10 @@ export interface PrintFile {
 
 interface PrintState {
   files: PrintFile[];
+  globalJobId?: string;
+  globalOtp?: string;
   setFiles: (files: PrintFile[]) => void;
+  setJobData: (jobId: string, otp: string) => void;
   updatePageRange: (id: string, range: string) => void;
   clearFiles: () => void;
 }
@@ -21,8 +24,9 @@ interface PrintState {
 export const usePrintStore = create<PrintState>((set) => ({
   files: [],
   setFiles: (files) => set({ files }),
+  setJobData: (jobId, otp) => set({ globalJobId: jobId, globalOtp: otp }),
   updatePageRange: (id, range) => set((state) => ({
     files: state.files.map(f => f.id === id ? { ...f, pagesToPrint: range } : f)
   })),
-  clearFiles: () => set({ files: [] })
+  clearFiles: () => set({ files: [], globalJobId: undefined, globalOtp: undefined })
 }))
