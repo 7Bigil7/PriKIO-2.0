@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from routes.upload import router as upload_router
 from routes.verify import router as verify_router
 from routes.status import router as status_router
+from routes.download import router as download_router
 from services.websocket import manager
 import logging
 
@@ -27,6 +28,7 @@ app.add_middleware(
 app.include_router(upload_router)
 app.include_router(verify_router)
 app.include_router(status_router)
+app.include_router(download_router)
 
 PI_SECRET = os.getenv("PI_SECRET", "super_secret_pi_key_12345")
 
