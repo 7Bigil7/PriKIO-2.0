@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { v4 as uuidv4 } from 'uuid'
+
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient()
-    const jobId = uuidv4()
+    const jobId = crypto.randomUUID()
     
     // Upload file to Supabase Storage
     const storagePath = `${jobId}/${file.name}`
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     // Create the print_jobs record
     const filesJson = [{
-      file_id: uuidv4(),
+      file_id: crypto.randomUUID(),
       filename: file.name,
       storage_path: storagePath,
       pages_selected: 'All',
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       .from('print_jobs')
       .insert({
         id: jobId,
-        session_id: uuidv4(), // temporary session ID
+        session_id: crypto.randomUUID(), // temporary session ID
         status: 'pending',
         files: filesJson,
         total_amount_paise: 200,
