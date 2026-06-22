@@ -62,7 +62,7 @@ export default function UploadScreen() {
           setUploadProgress((prev) => Math.min(prev + fileProgressStep * 0.1, fileProgressBase + fileProgressStep * 0.9))
         }, 100)
 
-        const response = await fetch('/api/fastapi/upload', {
+        const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
           signal: abortControllerRef.current.signal
@@ -79,7 +79,10 @@ export default function UploadScreen() {
 
         results.push({ 
           id: Math.random().toString(36).substring(7),
-          ...result, 
+          ...result,
+          fileName: item.name,
+          fileSizeMb: item.size.replace(" MB", ""),
+          pageCount: result.page_count || 1,
           pagesToPrint: item.pagesToPrint,
           originalFile: item.file,
           fileBuffer: buffer

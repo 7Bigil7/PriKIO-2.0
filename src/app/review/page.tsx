@@ -93,19 +93,30 @@ export default function ReviewPage() {
 
       <div className="desktop-right-panel" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%' }}>
-          <OrderReview
-            files={files as any}
-            copies={settings.copies}
-            colorMode={settings.colorMode}
-            layout={settings.layout}
-            orientation={settings.orientation}
-            printCost={settings.totalCost - 2}
-            serviceFee={2}
-            onEdit={() => router.push('/print-settings')}
-            onProceed={handleProceed}
-          />
-          {error && <p style={{ color: 'var(--red)', fontSize: '12px', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
-          {submitting && <p style={{ color: 'var(--grey)', fontSize: '12px', marginTop: '12px', textAlign: 'center' }}>Processing your order...</p>}
+          {submitting ? (
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '440px', margin: 'auto' }}>
+              <div className="skeleton" style={{ height: '120px', width: '100%', borderRadius: '14px' }}></div>
+              <div className="skeleton" style={{ height: '60px', width: '100%', borderRadius: '12px' }}></div>
+              <div className="skeleton" style={{ height: '60px', width: '100%', borderRadius: '12px' }}></div>
+              <div className="skeleton" style={{ height: '80px', width: '100%', borderRadius: '12px', marginTop: '20px' }}></div>
+              <p style={{ color: 'var(--grey)', fontSize: '13px', textAlign: 'center', marginTop: '16px', fontWeight: 600 }}>Securely encrypting and submitting your order...</p>
+            </div>
+          ) : (
+            <>
+              <OrderReview
+                files={files as any}
+                copies={settings.copies}
+                colorMode={settings.colorMode}
+                layout={settings.layout}
+                orientation={settings.orientation}
+                printCost={settings.totalCost - 2}
+                serviceFee={2}
+                onEdit={() => router.push('/print-settings')}
+                onProceed={handleProceed}
+              />
+              {error && <p style={{ color: 'var(--red)', fontSize: '12px', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -36,3 +36,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# pi env
+pi/.env
+pi/__pycache__/

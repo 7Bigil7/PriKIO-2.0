@@ -79,7 +79,7 @@ function PdfPageCanvas({ pdf, pageNum, selected, onToggle }: { pdf: any, pageNum
       ref={containerRef}
       onClick={() => onToggle(pageNum)}
       style={{
-        border: selected ? '4px solid #1a2340' : '1px solid var(--border)',
+        border: '1px solid var(--border)',
         borderRadius: '12px',
         overflow: 'hidden',
         position: 'relative',

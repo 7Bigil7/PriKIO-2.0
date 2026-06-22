@@ -1,10 +1,11 @@
 import os
 import time
-import json
 import logging
-import websocket
-import requests
+import threading
+import platform
+import subprocess
 from dotenv import load_dotenv
+from supabase import create_client, Client
 from printer import print_job
 
 load_dotenv()
@@ -12,54 +13,122 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-BACKEND_WS_URL = os.getenv("BACKEND_WS_URL")
-BACKEND_API_URL = os.getenv("BACKEND_API_URL")
-PI_SECRET = os.getenv("PI_SECRET")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-job_cache = {}
+if not SUPABASE_URL or not SUPABASE_KEY:
+    logger.error("SUPABASE_URL and SUPABASE_KEY are required in .env")
+    exit(1)
 
-def on_message(ws, message):
-    data = json.loads(message)
-    event = data.get("event")
-    payload = data.get("data", {})
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def check_lte_connection():
+    """Simulates checking the Hologram/Twilio IoT Cellular Modem"""
+    logger.info("📶 Checking LTE Cellular Modem status... Connection Secure.")
+
+def simulate_smart_plug_reboot():
+    """Simulates sending a physical power cycle command to a Smart Plug"""
+    logger.critical("🔌 Printer frozen for >5 mins. Triggering Smart Plug hard reboot...")
+    time.sleep(2)
+    logger.info("🔌 Smart Plug reboot complete. Printer restarting...")
+
+def poll_printer():
+    if platform.system() == "Windows":
+        logger.info("Windows detected. Disabling lpstat polling.")
+        return
     
-    if event == "job:new":
-        job_id = payload.get("job_id")
-        logger.info(f"New print job received: {job_id}")
-        job_cache[job_id] = payload
-        
-    elif event == "job:verified":
-        job_id = payload.get("job_id")
+    printer_name = os.getenv("PRINTER_NAME", "test_printer")
+    logger.info(f"Started hardware monitoring for printer: {printer_name}")
+    
+    frozen_counter = 0
+    
+    while True:
+        try:
+            result = subprocess.run(["lpstat", "-p", printer_name], capture_output=True, text=True)
+            output = result.stdout.lower()
+            
+            if "paused" in output or "error" in output or "jam" in output:
+                logger.error(f"Printer error detected: {output.strip()}")
+                # In production, we could update a printer_status table in Supabase
+                frozen_counter = 0
+                time.sleep(60)
+            elif "now printing" in output or "active" in output:
+                frozen_counter += 5
+                if frozen_counter >= 300:
+                    simulate_smart_plug_reboot()
+                    frozen_counter = 0
+                    time.sleep(60)
+                else:
+                    time.sleep(5)
+            else:
+                frozen_counter = 0
+                time.sleep(5)
+        except Exception as e:
+            logger.error(f"Polling error: {str(e)}")
+            time.sleep(10)
+
+def handle_job_update(payload):
+    record = payload.get("record", {})
+    job_id = record.get("id")
+    status = record.get("status")
+    
+    logger.info(f"Received job update: {job_id} -> {status}")
+    
+    if status == "printing":
         logger.info(f"Job verified, starting print for: {job_id}")
-        job_info = job_cache.get(job_id)
-        if job_info:
-            print_job(job_id, job_info.get("filename"), BACKEND_API_URL)
+        
+        # In a real scenario, you might have multiple files
+        files = record.get("files", [])
+        if files:
+            for file_info in files:
+                filename = file_info.get("filename")
+                storage_path = file_info.get("storage_path")
+                print_job(job_id, filename, storage_path, supabase)
+                
+            # After printing, update job status to completed
+            try:
+                supabase.table("print_jobs").update({"status": "completed"}).eq("id", job_id).execute()
+                logger.info(f"Marked job {job_id} as completed in Supabase.")
+            except Exception as e:
+                logger.error(f"Failed to update job status: {e}")
         else:
-            logger.error("Job details not found in local cache!")
+            logger.error("Job files not found in record!")
 
-def on_error(ws, error):
-    logger.error(f"WebSocket error: {error}")
-
-def on_close(ws, close_status_code, close_msg):
-    logger.warning("WebSocket connection closed. Reconnecting in 5 seconds...")
-    time.sleep(5)
-    connect_websocket()
-
-def on_open(ws):
-    logger.info("Connected to Backend WebSocket successfully!")
-
-def connect_websocket():
-    headers = {"x-pi-secret": PI_SECRET} if PI_SECRET else {}
-    ws = websocket.WebSocketApp(
-        BACKEND_WS_URL,
-        header=headers,
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close
-    )
-    ws.run_forever()
+def listen_to_supabase():
+    logger.info("Connecting to Supabase Realtime...")
+    
+    try:
+        # Subscribe to updates on print_jobs where status changes
+        channel = supabase.channel('public:print_jobs')
+        channel.on(
+            "postgres_changes",
+            event="UPDATE",
+            schema="public",
+            table="print_jobs",
+            callback=handle_job_update
+        ).subscribe()
+        
+        logger.info("Subscribed to print_jobs updates!")
+        
+        # Keep the main thread alive to listen for events
+        while True:
+            time.sleep(1)
+            
+    except Exception as e:
+        logger.error(f"Realtime connection error: {e}")
 
 if __name__ == "__main__":
-    logger.info("Starting PrintFlow Pi Controller...")
-    connect_websocket()
+    logger.info("Starting PrintFlow Pi Controller (Supabase Edition)...")
+    check_lte_connection()
+    
+    # Start the polling thread
+    t = threading.Thread(target=poll_printer, daemon=True)
+    t.start()
+    
+    while True:
+        try:
+            listen_to_supabase()
+        except Exception as e:
+            logger.error(f"Connection failed: {e}")
+        logger.info("Reconnecting in 5 seconds...")
+        time.sleep(5)

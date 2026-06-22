@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Kiosk() {
   const [otp, setOtp] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState('')
   const [successData, setSuccessData] = useState<any>(null)
+  const [currentTime, setCurrentTime] = useState<string>('')
+
+  useEffect(() => {
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}))
+    }
+    updateTime()
+    const interval = setInterval(updateTime, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -15,7 +25,7 @@ export default function Kiosk() {
     setError('')
 
     try {
-      const res = await fetch('/api/fastapi/verify-otp', {
+      const res = await fetch('/api/kiosk/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ otp_entered: otp })
@@ -41,7 +51,7 @@ export default function Kiosk() {
           <div style={{ color: '#fff', fontSize: '24px', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>CampusPrint Kiosk</div>
           <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '20px', fontWeight: 400, display: 'flex', gap: '40px', alignItems: 'center' }}>
             <span>LIB-04</span>
-            <span>{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            <span>{currentTime}</span>
           </div>
         </header>
 

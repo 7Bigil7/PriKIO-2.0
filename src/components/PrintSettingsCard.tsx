@@ -23,7 +23,7 @@ export default function PrintSettingsCard({
   onBack,
 }: PrintSettingsCardProps) {
   const [colorMode,    setColorMode]    = useState("bw");      // "bw" | "color"
-  const [layout,       setLayout]       = useState("duplex");  // "simplex" | "duplex"
+  const [layout,       setLayout]       = useState("simplex"); // "simplex" | "duplex"
   const [orientation,  setOrientation]  = useState("portrait");// "portrait" | "landscape"
   const [copies,       setCopies]       = useState(1);
 
