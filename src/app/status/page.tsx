@@ -25,13 +25,30 @@ function StatusScreen() {
 
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/job/${currentJobId}/status`);
-        const data = await res.json();
-        if (data.otp && !globalOtp) {
-          usePrintStore.getState().setJobData(currentJobId, data.otp);
+        // Call Supabase API directly using REST to avoid client lib overhead
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (!supabaseUrl || !supabaseKey) return;
+
+        // Fetch Job Status
+        const statusRes = await fetch(`${supabaseUrl}/rest/v1/print_jobs?id=eq.${currentJobId}&select=status`, {
+          headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+        });
+        const statusData = await statusRes.json();
+        if (statusData && statusData.length > 0 && statusData[0].status) {
+          setJobStatus(statusData[0].status);
         }
-        if (data.status) {
-          setJobStatus(data.status);
+
+        // Fetch OTP if missing
+        if (!globalOtp) {
+          const otpRes = await fetch(`${supabaseUrl}/rest/v1/otp_sessions?print_job_id=eq.${currentJobId}&select=otp_code`, {
+            headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+          });
+          const otpData = await otpRes.json();
+          if (otpData && otpData.length > 0 && otpData[0].otp_code) {
+            usePrintStore.getState().setJobData(currentJobId, otpData[0].otp_code);
+          }
         }
       } catch (err) {
         console.error("Failed to recover session", err);
@@ -143,18 +160,19 @@ function StatusScreen() {
           flex-shrink: 0;
         }
 
-        /* Glassmorphism Card */
+        /* Main Content Card (Matching OrderReview Style) */
         .vk-card {
-          background: rgba(255, 255, 255, 0.75);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.6);
-          border-radius: 32px;
-          width: 100%; max-width: 460px;
-          padding: 40px 32px 50px;
+          background: #fff;
+          border-radius: 24px;
+          box-shadow: 0 -4px 32px rgba(26,35,64,0.05);
+          width: min(440px, 100%);
+          padding: 40px 32px;
           text-align: center;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          margin: auto;
+          display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+          margin: 0 auto 0 auto;
+          flex: 1;
+          position: relative;
+          overflow: hidden;
         }
         .vk-card-title {
           font-size: 20px; color: #1a2340;
@@ -184,12 +202,21 @@ function StatusScreen() {
         }
         .vk-btn-secondary:hover { background: #e2e4ef; }
         
+        .vk-sheet-overlay {
+           position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+           opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+           z-index: 10;
+        }
+        .vk-sheet-overlay.open {
+           opacity: 1; pointer-events: auto;
+        }
+
         .vk-bottom-sheet {
            position: absolute; bottom: 0; left: 0; right: 0;
-           background: #fff; border-top-left-radius: 24px; border-top-right-radius: 24px;
-           padding: 32px 24px 40px; transform: translateY(100%);
+           background: #fff; border-top-left-radius: 28px; border-top-right-radius: 28px;
+           padding: 40px 32px 50px; transform: translateY(100%);
            transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-           z-index: 20; box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+           z-index: 20; box-shadow: 0 -24px 48px rgba(0,0,0,0.2);
            display: flex; flex-direction: column; align-items: center;
         }
         .vk-bottom-sheet.open {
@@ -199,8 +226,9 @@ function StatusScreen() {
            position: absolute; top: 16px; right: 16px;
            background: #f0f1f7; border: none; border-radius: 50%;
            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-           color: #1a2340; cursor: pointer;
+           color: #1a2340; cursor: pointer; transition: background 0.2s;
         }
+        .vk-bs-close:hover { background: #e2e4ef; }
 
         /* Mobile Overrides */
         @media (max-width: 639px) {
@@ -244,6 +272,14 @@ function StatusScreen() {
           70% { box-shadow: 0 0 0 30px rgba(43, 78, 170, 0); }
           100% { box-shadow: 0 0 0 0 rgba(43, 78, 170, 0); }
         }
+        @keyframes fadeIn { 
+          from { opacity: 0; } 
+          to { opacity: 1; } 
+        }
+        @keyframes slideUp { 
+          from { transform: translateY(100%); } 
+          to { transform: translateY(0); } 
+        }
         .hardware-sync-container {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           padding: 40px; text-align: center;
@@ -283,7 +319,7 @@ function StatusScreen() {
           
           <div className="vk-card">
             {isPrinting ? (
-              <div className="hardware-sync-container">
+              <div className="hardware-sync-container" style={{ flex: 1, width: '100%' }}>
                 <div className="pulse-circle">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12"></polyline>
@@ -293,75 +329,69 @@ function StatusScreen() {
                 <p style={{ color: '#8892a4', fontSize: '14px', marginBottom: '32px', maxWidth: '280px' }}>
                   The hardware has synced successfully. Your document is now printing.
                 </p>
-                <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
+                <button className="vk-btn-secondary" onClick={() => router.push('/')} style={{ marginTop: 'auto' }}>Return Home</button>
               </div>
             ) : (
-              <>
-                <div className="vk-mascot">
-                  <img src="/mascot.png" alt="CampusPrint Mascot" className="vk-mascot-img" />
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className="vk-mascot">
+                    <img src="/mascot.png" alt="CampusPrint Mascot" className="vk-mascot-img" />
+                  </div>
+                  <h2 className="vk-card-title">OTP Code</h2>
+                  <p style={{ color: '#8892a4', fontSize: '14px', marginBottom: '32px' }}>Use this OTP to authorize your print queue at the kiosk.</p>
+
+                  {!expired && (
+                    <p style={{ color: '#8892a4', fontSize: '13px', marginBottom: '0' }}>Expires in <span style={{ color: '#4a5fc1', fontWeight: 600 }}>{mins}:{secs}</span></p>
+                  )}
+                  {expired && (
+                    <p style={{ color: '#e53e3e', fontWeight: 700, marginBottom: '0', letterSpacing: '0.08em', fontSize: '13px' }}>EXPIRED</p>
+                  )}
                 </div>
-                <h2 className="vk-card-title">OTP Code</h2>
-                <p style={{ color: '#8892a4', fontSize: '14px', marginBottom: '32px' }}>Use this OTP to authorize your print queue at the kiosk.</p>
 
-                {!expired && (
-                  <p style={{ color: '#8892a4', fontSize: '13px', marginBottom: '24px' }}>Expires in <span style={{ color: '#4a5fc1', fontWeight: 600 }}>{mins}:{secs}</span></p>
-                )}
-
-                {expired ? (
-                  <>
-                    <p style={{ color: '#e53e3e', fontWeight: 700, marginBottom: '24px', letterSpacing: '0.08em', fontSize: '13px' }}>EXPIRED</p>
+                <div style={{ display: 'flex', flexDirection: 'column', marginTop: 'auto', paddingTop: '20px' }}>
+                  {expired ? (
                     <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
-                  </>
-                ) : (
-                  <>
-                    <button className="vk-btn-primary" onClick={() => setShowOTP(true)}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                      View OTP Code
-                    </button>
-                    <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
-                  </>
-                )}
-              </>
-            )}
-
-            {/* OVERLAY for clicking outside to close bottom sheet */}
-            {showOTP && !isPrinting && (
-              <div 
-                onClick={() => setShowOTP(false)}
-                style={{ position: 'absolute', inset: 0, zIndex: 5, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)', borderRadius: '24px' }}
-              />
-            )}
-
-            {/* Bottom Sheet */}
-            {!isPrinting && (
-              <div className={`vk-bottom-sheet ${showOTP ? 'open' : ''}`}>
-                <button className="vk-bs-close" onClick={() => setShowOTP(false)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-                
-                <h2 style={{ fontSize: '20px', color: '#1a2340', fontWeight: 700, marginBottom: '24px' }}>OTP Code</h2>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(12px,4vw,24px)', marginBottom: '12px' }}>
-                  {otpDigits.map((d, i) => (
-                    <span key={i} style={{ fontSize: 'clamp(36px,10vw,52px)', fontWeight: 700, color: '#1a2340', lineHeight: 1 }}>{d}</span>
-                  ))}
+                  ) : (
+                    <>
+                      <button className="vk-btn-primary" onClick={() => setShowOTP(true)}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        View OTP Code
+                      </button>
+                      <button className="vk-btn-secondary" onClick={() => router.push('/')}>Return Home</button>
+                    </>
+                  )}
                 </div>
-                
-                <button 
-                  onClick={handleCopy}
-                  style={{ fontSize: '14px', color: '#4a5fc1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', marginBottom: '24px', letterSpacing: '0.02em' }}
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-
-                <button style={{ width: '100%', padding: '14px', borderRadius: '50px', background: '#1a2340', color: '#fff', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px', transition: 'opacity 0.2s' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  Download
-                </button>
-                <button style={{ width: '100%', padding: '13px', borderRadius: '50px', background: 'transparent', border: '1.5px solid #25d366', color: '#25d366', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background 0.2s' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                  Share via WhatsApp
-                </button>
               </div>
+            )}
+
+            {/* Bottom Sheet for OTP */}
+            {!isPrinting && (
+              <>
+                <div 
+                  className={`vk-sheet-overlay ${showOTP ? 'open' : ''}`}
+                  onClick={() => setShowOTP(false)}
+                />
+                <div className={`vk-bottom-sheet ${showOTP ? 'open' : ''}`}>
+                  <button className="vk-bs-close" onClick={() => setShowOTP(false)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                  
+                  <h2 style={{ fontSize: '26px', color: '#1a2340', fontWeight: 800, margin: '0 0 32px' }}>OTP Code</h2>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(12px,3vw,20px)', marginBottom: '40px' }}>
+                    {otpDigits.map((d, i) => (
+                      <div key={i} style={{ width: '64px', height: '76px', background: '#f5f6ff', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '42px', fontWeight: 700, color: '#1a2340', border: '2px solid #e2e4ef' }}>
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <button className="vk-btn-primary" onClick={handleCopy} style={{ padding: '16px', fontSize: '16px', marginBottom: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    {copied ? "Copied to Clipboard!" : "Copy OTP Code"}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>

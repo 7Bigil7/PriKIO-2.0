@@ -30,8 +30,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to upload file to storage' }, { status: 500 })
     }
 
-    // Determine total pages (Mock 1 for images, would need pdf-parse for real PDFs)
-    const pageCount = 1
+    // Determine total pages via simple PDF text matching
+    let pageCount = 1
+    if (file.type === 'application/pdf') {
+      const text = Buffer.from(buffer).toString('latin1')
+      const matches = text.match(/\/Type\s*\/Page\b/g)
+      if (matches && matches.length > 0) {
+        pageCount = matches.length
+      }
+    }
 
     // Create the print_jobs record
     const filesJson = [{

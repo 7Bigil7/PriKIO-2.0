@@ -48,17 +48,31 @@ export default function Payment() {
   }, [router])
 
   const handleSimulateWebhookAndRedirect = async () => {
-    // In production, Razorpay calls the webhook. Here we simulate it.
-    const realJobId = globalJobId || printJob.id
-    try {
-      await fetch('http://localhost:8000/api/webhook/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ job_id: realJobId })
-      })
-    } catch (e) {
-      console.error("Webhook simulation failed", e)
+    // Simulate webhook by directly updating Supabase status so the Status screen knows it's paid
+    const realJobId = globalJobId || printJob?.id
+    if (!realJobId) {
+      router.push('/')
+      return
     }
+    
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseKey) {
+        await fetch(`${supabaseUrl}/rest/v1/print_jobs?id=eq.${realJobId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({ status: 'verified', payment_status: 'paid' })
+        });
+      }
+    } catch (e) {
+      console.error("Simulation failed", e)
+    }
+    
     router.push(`/status?id=${realJobId}`)
   }
 

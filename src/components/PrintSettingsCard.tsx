@@ -44,7 +44,9 @@ export default function PrintSettingsCard({
           if (!isNaN(num)) count += 1;
         }
       }
-      return count > 0 ? count : totalPages;
+      // Ensure we don't return more pages than the document actually has!
+      const finalCount = count > 0 ? count : totalPages;
+      return Math.min(finalCount, totalPages);
     } catch {
       return totalPages;
     }
@@ -384,7 +386,7 @@ export default function PrintSettingsCard({
 
               <button className="confirm-btn" onClick={handleConfirm}>
                 <span>Confirm & Pay</span>
-                <span className="confirm-badge">₹ {printCost.toFixed(2)}</span>
+                <span className="confirm-badge">₹ {totalCost.toFixed(2)}</span>
               </button>
             </div>
           </div>
