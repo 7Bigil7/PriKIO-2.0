@@ -15,7 +15,24 @@ export default function UploadScreen() {
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const handleFiles = (incoming: FileList | File[]) => {
-    const arr = Array.from(incoming).map((f) => ({
+    const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png']
+    const validFiles: File[] = []
+    let rejectedCount = 0
+
+    Array.from(incoming).forEach(f => {
+      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase()
+      if (allowedExtensions.includes(ext)) {
+        validFiles.push(f)
+      } else {
+        rejectedCount++
+      }
+    })
+
+    if (rejectedCount > 0) {
+      alert(`Skipped ${rejectedCount} file(s). Only PDF, JPG, and PNG formats are supported.`)
+    }
+
+    const arr = validFiles.map((f) => ({
       id: Math.random().toString(36).slice(2),
       file: f,
       name: f.name,
