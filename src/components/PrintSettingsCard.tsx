@@ -230,7 +230,7 @@ export default function PrintSettingsCard({
         {/* ── Header ── */}
         <AppHeader title="CampusPrint" subtitle="Print Anywhere on Campus" onBack={onBack || (() => window.history.back())} />
 
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", WebkitOverflowScrolling: "touch" }}>
           <div style={{ width: "100%", maxWidth: "440px", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <h2 style={{ margin: "0 0 0 0", textAlign: "center", fontSize: "1.4rem", fontWeight: 700, color: "#1a2340", fontFamily: "'Quicksand', sans-serif" }}>Print Settings</h2>
 

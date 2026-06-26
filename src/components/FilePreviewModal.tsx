@@ -209,7 +209,8 @@ export default function FilePreviewModal({
     onSave(formatSetToPageRange(selectedPages, file.pageCount))
   }
 
-  const isImage = typeof file.originalFile?.type === 'string' && file.originalFile.type.startsWith('image/')
+  const isImage = typeof file.originalFile?.type === 'string' && file.originalFile.type.startsWith('image/') ||
+                  typeof file.fileName === 'string' && /\.(jpg|jpeg|png|gif|webp)$/i.test(file.fileName)
 
   return (
     <div className="modal-overlay" style={{ position: 'fixed', zIndex: 9999, inset: 0 }}>
@@ -224,7 +225,7 @@ export default function FilePreviewModal({
           </button>
         </div>
 
-        <div id="pdf-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '16px', background: 'var(--body-bg)' }}>
+        <div id="pdf-scroll-container" style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px', background: 'var(--body-bg)' }}>
           {pdf ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', padding: '16px 0' }}>
               {Array.from({ length: pdf.numPages }, (_, i) => i + 1).map(pageNum => (

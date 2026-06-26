@@ -16,8 +16,7 @@ import { useState } from "react";
 //      card the same way as PrintSettings card (right panel)
 //
 // Props:
-//   fileName    – "hall_ticket.pdf"
-//   filePages   – 5
+//   files       – Array of files
 //   copies      – 1
 //   colorMode   – "bw" | "color"
 //   layout      – "simplex" | "duplex"
@@ -34,8 +33,7 @@ import { useState } from "react";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function OrderReview({
-  fileName    = "hall_ticket_12345.pdf",
-  filePages   = 5,
+  files       = [],
   copies      = 1,
   colorMode   = "bw",
   layout      = "duplex",
@@ -54,8 +52,28 @@ export default function OrderReview({
   const [editPhone, setEditPhone] = useState(false);
 
   const grandTotal    = printCost + serviceFee;
-  const pagesPerSheet = layout === "duplex" ? 2 : 1;
-  const sheets        = Math.ceil(filePages / pagesPerSheet) * copies;
+  
+  const totalFilePages = files.reduce((acc, f) => {
+    const pagesToPrint = f.pageRange || f.pagesToPrint || "All";
+    if (!pagesToPrint || pagesToPrint.toLowerCase() === 'all') return acc + (f.pageCount || 1);
+    try {
+      const parts = pagesToPrint.split(',');
+      let count = 0;
+      for (const part of parts) {
+        if (part.includes('-')) {
+          const [start, end] = part.split('-').map(s => parseInt(s.trim()));
+          if (!isNaN(start) && !isNaN(end) && end >= start) count += (end - start + 1);
+        } else {
+          const num = parseInt(part.trim());
+          if (!isNaN(num)) count += 1;
+        }
+      }
+      return acc + (count > 0 ? count : (f.pageCount || 1));
+    } catch {
+      return acc + (f.pageCount || 1);
+    }
+  }, 0);
+
   const colorLabel    = colorMode === "bw" ? "B/W" : "Color";
 
   return (
@@ -198,60 +216,65 @@ export default function OrderReview({
             </div>
 
             <div className="or-section">
-              {/* File row */}
-              <div style={{ padding: "12px 14px", borderBottom: "1px solid #f0f1f7" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {/* Mini preview thumbnail */}
-                  <div style={{ width: "44px", height: "56px", background: "#f0f1f7", borderRadius: "6px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e0e2ef" }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a5fc1" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {files.map((file, idx) => (
+                  <div key={idx} style={{ padding: "12px 14px", borderBottom: idx === files.length - 1 ? "none" : "1px solid #f0f1f7" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {/* Mini preview thumbnail */}
+                      <div style={{ width: "44px", height: "56px", background: "#f0f1f7", borderRadius: "6px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e0e2ef" }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a5fc1" strokeWidth="1.8" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: 600, color: "#1a2340", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.fileName}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "#888" }}>
+                          ({file.pageCount || 1} Page{(file.pageCount || 1) !== 1 ? "s" : ""})
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: 600, color: "#1a2340", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "#888" }}>({filePages} Page{filePages !== 1 ? "s" : ""})</p>
-                  </div>
-                </div>
+                ))}
+              </div>
 
-                {/* Settings chips */}
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "10px", flexWrap: "wrap" }}>
-                  <span className="or-icon-pill">{copies} Cop{copies === 1 ? "y" : "ies"}</span>
+              {/* Settings chips */}
+              <div style={{ padding: "0 14px 12px 14px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", borderTop: "1px solid #f0f1f7", paddingTop: "12px" }}>
+                <span className="or-icon-pill">{copies} Cop{copies === 1 ? "y" : "ies"}</span>
 
-                  {/* Color blob chip */}
-                  <span className="or-icon-pill">
-                    {colorMode === "color" ? (
-                      <svg width="14" height="14" viewBox="0 0 20 20">
-                        <circle cx="7"  cy="10" r="6" fill="#3b82f6" opacity="0.85"/>
-                        <circle cx="13" cy="10" r="6" fill="#f59e0b" opacity="0.85"/>
-                        <circle cx="10" cy="6"  r="6" fill="#ec4899" opacity="0.75"/>
-                      </svg>
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 20 20">
-                        <circle cx="8"  cy="11" r="6" fill="#9e9e9e"/>
-                        <circle cx="12" cy="9"  r="6" fill="#212121"/>
-                      </svg>
-                    )}
-                    {colorLabel}
-                  </span>
-
-                  {/* Layout chip */}
-                  <span className="or-icon-pill">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      {layout === "duplex"
-                        ? <><rect x="2" y="3" width="13" height="17" rx="2"/><rect x="9" y="5" width="13" height="17" rx="2" opacity="0.4"/></>
-                        : <rect x="4" y="3" width="16" height="18" rx="2"/>
-                      }
+                {/* Color blob chip */}
+                <span className="or-icon-pill">
+                  {colorMode === "color" ? (
+                    <svg width="14" height="14" viewBox="0 0 20 20">
+                      <circle cx="7"  cy="10" r="6" fill="#3b82f6" opacity="0.85"/>
+                      <circle cx="13" cy="10" r="6" fill="#f59e0b" opacity="0.85"/>
+                      <circle cx="10" cy="6"  r="6" fill="#ec4899" opacity="0.75"/>
                     </svg>
-                    {layout === "duplex" ? "Double-sided" : "Single-sided"}
-                  </span>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 20 20">
+                      <circle cx="8"  cy="11" r="6" fill="#9e9e9e"/>
+                      <circle cx="12" cy="9"  r="6" fill="#212121"/>
+                    </svg>
+                  )}
+                  {colorLabel}
+                </span>
 
-                  {/* Orientation chip */}
-                  <span className="or-icon-pill">
-                    {orientation === "portrait"
-                      ? <svg width="10" height="13" viewBox="0 0 10 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="1" width="8" height="11" rx="1.5"/></svg>
-                      : <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="1" width="11" height="8" rx="1.5"/></svg>
+                {/* Layout chip */}
+                <span className="or-icon-pill">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    {layout === "duplex"
+                      ? <><rect x="2" y="3" width="13" height="17" rx="2"/><rect x="9" y="5" width="13" height="17" rx="2" opacity="0.4"/></>
+                      : <rect x="4" y="3" width="16" height="18" rx="2"/>
                     }
-                    {orientation === "portrait" ? "Portrait" : "Landscape"}
-                  </span>
-                </div>
+                  </svg>
+                  {layout === "duplex" ? "Double-sided" : "Single-sided"}
+                </span>
+
+                {/* Orientation chip */}
+                <span className="or-icon-pill">
+                  {orientation === "portrait"
+                    ? <svg width="10" height="13" viewBox="0 0 10 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="1" width="8" height="11" rx="1.5"/></svg>
+                    : <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="1" y="1" width="11" height="8" rx="1.5"/></svg>
+                  }
+                  {orientation === "portrait" ? "Portrait" : "Landscape"}
+                </span>
               </div>
             </div>
           </div>
@@ -326,11 +349,11 @@ export default function OrderReview({
               </div>
               <div className="or-row">
                 <span className="or-row-label">Total Files</span>
-                <span className="or-row-val">1 File</span>
+                <span className="or-row-val">{files.length} File{files.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="or-row">
                 <span className="or-row-label">Total Pages</span>
-                <span className="or-row-val">{filePages} Page{filePages !== 1 ? "s" : ""}</span>
+                <span className="or-row-val">{totalFilePages} Page{totalFilePages !== 1 ? "s" : ""}</span>
               </div>
               <div className="or-row">
                 <span className="or-row-label">Sheets ({colorLabel}, {layout === "duplex" ? "Duplex" : "Simplex"})</span>
@@ -357,7 +380,7 @@ export default function OrderReview({
         {/* ── Sticky footer ── */}
         <div className="or-footer">
           <div className="or-footer-left">
-            Total {filePages} page{filePages !== 1 ? "s" : ""}
+            Total {totalFilePages} page{totalFilePages !== 1 ? "s" : ""}
             <strong>₹ {grandTotal.toFixed(2)}</strong>
           </div>
           <button className="or-proceed" style={{ width: "auto", padding: "13px 28px" }} onClick={onProceed}>
