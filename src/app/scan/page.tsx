@@ -12,11 +12,7 @@ export default function ScanPage() {
 
   const handleStartScanning = () => {
     setCameraActive(true)
-    setInitializing(true)
-    // Simulate camera initialization delay
-    setTimeout(() => {
-      setInitializing(false)
-    }, 1500)
+    setInitializing(false)
   }
 
   const handleBypass = () => {

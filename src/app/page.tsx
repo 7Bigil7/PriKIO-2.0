@@ -26,9 +26,7 @@ export default function LandingPage() {
 
   const handleSignIn = () => {
     setLoading(true)
-    setTimeout(() => {
-      router.push('/scan')
-    }, 500)
+    router.push('/scan')
   }
 
   return (

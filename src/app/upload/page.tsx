@@ -113,9 +113,7 @@ export default function UploadScreen() {
       }
       
       // Redirect to the print settings page to continue the UI flow
-      setTimeout(() => {
-        router.push('/print-settings')
-      }, 500)
+      router.push('/print-settings')
 
     } catch (err: any) {
       if (err.name === 'AbortError') {

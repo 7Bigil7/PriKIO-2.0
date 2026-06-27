@@ -21,7 +21,7 @@ export default function PaymentSuccess({
   merchantName = "CampusPrint",
   paymentId = "pay_" + Math.random().toString(36).slice(2, 14).toUpperCase(),
   paymentMethod = "UPI",
-  redirectSeconds = 4,
+  redirectSeconds = 0,
   onRedirect = () => {},
 }: PaymentSuccessProps) {
   const [phase, setPhase] = useState(0);
@@ -58,12 +58,12 @@ export default function PaymentSuccess({
       return;
     }
     const t: ReturnType<typeof setTimeout>[] = [];
-    t.push(setTimeout(() => { setPhase(1); setCircleDash(0); }, 150));
-    t.push(setTimeout(() => { setPhase(2); setCheckDash(0); }, 850));
-    t.push(setTimeout(() => setPhase(3), 1300));
-    t.push(setTimeout(() => setPhase(4), 1600));
-    t.push(setTimeout(() => setCardVisible(true), 1900));
-    t.push(setTimeout(() => { setPhase(5); setBtnVisible(true); }, 2300));
+    t.push(setTimeout(() => { setPhase(1); setCircleDash(0); }, 0));
+    t.push(setTimeout(() => { setPhase(2); setCheckDash(0); }, 100));
+    t.push(setTimeout(() => setPhase(3), 200));
+    t.push(setTimeout(() => setPhase(4), 300));
+    t.push(setTimeout(() => setCardVisible(true), 400));
+    t.push(setTimeout(() => { setPhase(5); setBtnVisible(true); }, 500));
     return () => t.forEach(clearTimeout);
   }, [prefersReduced]);
 
