@@ -4,8 +4,9 @@ import logging
 import threading
 import platform
 import subprocess
+import asyncio
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from supabase import create_client, Client, acreate_client
 from printer import print_job
 
 load_dotenv()
@@ -20,6 +21,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     logger.error("SUPABASE_URL and SUPABASE_KEY are required in .env")
     exit(1)
 
+# We keep the sync client for normal DB operations (like updates and storage)
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def check_lte_connection():
@@ -49,7 +51,6 @@ def poll_printer():
             
             if "paused" in output or "error" in output or "jam" in output:
                 logger.error(f"Printer error detected: {output.strip()}")
-                # In production, we could update a printer_status table in Supabase
                 frozen_counter = 0
                 time.sleep(60)
             elif "now printing" in output or "active" in output:
@@ -72,21 +73,20 @@ def handle_job_update(payload):
     job_id = record.get("id")
     status = record.get("status")
     
-    logger.info(f"Received job update: {job_id} -> {status}")
-    
     if status == "printing":
+        logger.info(f"Received job update: {job_id} -> {status}")
         logger.info(f"Job verified, starting print for: {job_id}")
         
-        # In a real scenario, you might have multiple files
         files = record.get("files", [])
         if files:
             for file_info in files:
                 filename = file_info.get("filename")
                 storage_path = file_info.get("storage_path")
+                # We pass the sync client to printer_job so it can download files normally
                 print_job(job_id, filename, storage_path, supabase)
                 
-            # After printing, update job status to completed
             try:
+                # Use sync client for DB updates
                 supabase.table("print_jobs").update({"status": "completed"}).eq("id", job_id).execute()
                 logger.info(f"Marked job {job_id} as completed in Supabase.")
             except Exception as e:
@@ -94,25 +94,27 @@ def handle_job_update(payload):
         else:
             logger.error("Job files not found in record!")
 
-def listen_to_supabase():
+async def listen_to_supabase():
     logger.info("Connecting to Supabase Realtime...")
-    
     try:
-        # Subscribe to updates on print_jobs where status changes
-        channel = supabase.channel('public:print_jobs')
+        # Create an async client strictly for realtime subscriptions
+        async_client = await acreate_client(SUPABASE_URL, SUPABASE_KEY)
+        
+        channel = async_client.channel('public:print_jobs')
         channel.on(
             "postgres_changes",
             event="UPDATE",
             schema="public",
             table="print_jobs",
             callback=handle_job_update
-        ).subscribe()
+        )
         
+        await channel.subscribe()
         logger.info("Subscribed to print_jobs updates!")
         
-        # Keep the main thread alive to listen for events
+        # Keep the event loop running
         while True:
-            time.sleep(1)
+            await asyncio.sleep(1)
             
     except Exception as e:
         logger.error(f"Realtime connection error: {e}")
@@ -121,13 +123,12 @@ if __name__ == "__main__":
     logger.info("Starting PrintFlow Pi Controller (Supabase Edition)...")
     check_lte_connection()
     
-    # Start the polling thread
     t = threading.Thread(target=poll_printer, daemon=True)
     t.start()
     
     while True:
         try:
-            listen_to_supabase()
+            asyncio.run(listen_to_supabase())
         except Exception as e:
             logger.error(f"Connection failed: {e}")
         logger.info("Reconnecting in 5 seconds...")
