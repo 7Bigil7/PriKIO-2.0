@@ -69,7 +69,7 @@ def poll_printer():
             time.sleep(10)
 
 def handle_job_update(payload):
-    record = payload.get("record", {})
+    record = payload.get("data", {}).get("record", {})
     job_id = record.get("id")
     status = record.get("status")
     
