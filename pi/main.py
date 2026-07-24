@@ -101,8 +101,7 @@ async def listen_to_supabase():
         async_client = await acreate_client(SUPABASE_URL, SUPABASE_KEY)
         
         channel = async_client.channel('public:print_jobs')
-        channel.on(
-            "postgres_changes",
+        channel.on_postgres_changes(
             event="UPDATE",
             schema="public",
             table="print_jobs",
