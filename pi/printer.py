@@ -14,11 +14,12 @@ def print_job(job_id, file_info, supabase_client):
     copies = file_info.get("copies", 1)
     sides = file_info.get("sides", "Single")
     color_mode = file_info.get("color_mode", "B&W")
+    orientation = file_info.get("orientation", "Portrait")
 
     logger.info(f"============ PRINTING ============")
     logger.info(f"Job ID: {job_id}")
     logger.info(f"Filename: {filename}")
-    logger.info(f"Settings: Copies={copies}, Sides={sides}, Color={color_mode}")
+    logger.info(f"Settings: Copies={copies}, Sides={sides}, Color={color_mode}, Orientation={orientation}")
     
     # 1. Download the file from Supabase Storage
     logger.info(f"Downloading {storage_path} from Supabase...")
@@ -63,6 +64,12 @@ def print_job(job_id, file_info, supabase_client):
                 lp_cmd.extend(["-o", "print-color-mode=color"])
             else:
                 lp_cmd.extend(["-o", "print-color-mode=monochrome"])
+
+            # Orientation
+            if orientation.lower() == "landscape":
+                lp_cmd.extend(["-o", "landscape"])
+            else:
+                lp_cmd.extend(["-o", "portrait"])
 
             # Add the filepath at the end
             lp_cmd.append(local_filepath)

@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         color_mode: body.colorMode === 'bw' ? 'B&W' : 'Color',
         paper_size: 'A4',
         sides: body.sides === 'duplex' ? 'Double' : 'Single',
+        orientation: body.orientation === 'landscape' ? 'Landscape' : 'Portrait',
         subtotal_paise: body.total_amount ? body.total_amount * 100 : 200
       }
     })

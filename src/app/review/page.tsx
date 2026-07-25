@@ -49,6 +49,7 @@ export default function ReviewPage() {
           })),
           colorMode: settings.colorMode,
           sides: settings.layout,
+          orientation: settings.orientation,
           copies: settings.copies,
           sheetCount: settings.sheetCount,
           total_amount: settings.totalCost
