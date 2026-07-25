@@ -49,9 +49,9 @@ def print_job(job_id, file_info, supabase_client):
             # Construct CUPS command with options
             lp_cmd = ["lp", "-d", printer_name]
             
-            # Copies
+            # Copies - use both -n and -o copies
             if copies and int(copies) > 1:
-                lp_cmd.extend(["-n", str(copies)])
+                lp_cmd.extend(["-n", str(copies), "-o", f"copies={copies}", "-o", "Collate=True"])
             
             # Sides (Duplex)
             if sides.lower() == "double":
@@ -67,9 +67,12 @@ def print_job(job_id, file_info, supabase_client):
 
             # Orientation
             if orientation.lower() == "landscape":
-                lp_cmd.extend(["-o", "landscape"])
+                lp_cmd.extend(["-o", "landscape", "-o", "orientation-requested=4"])
             else:
-                lp_cmd.extend(["-o", "portrait"])
+                lp_cmd.extend(["-o", "portrait", "-o", "orientation-requested=3"])
+
+            # Add fit-to-page so images actually rotate and fit properly
+            lp_cmd.extend(["-o", "fit-to-page"])
 
             # Add the filepath at the end
             lp_cmd.append(local_filepath)
