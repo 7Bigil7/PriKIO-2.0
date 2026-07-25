@@ -80,10 +80,8 @@ def handle_job_update(payload):
         files = record.get("files", [])
         if files:
             for file_info in files:
-                filename = file_info.get("filename")
-                storage_path = file_info.get("storage_path")
-                # We pass the sync client to printer_job so it can download files normally
-                print_job(job_id, filename, storage_path, supabase)
+                # We pass the full file_info dict to print_job so it can read settings
+                print_job(job_id, file_info, supabase)
                 
             try:
                 # Use sync client for DB updates

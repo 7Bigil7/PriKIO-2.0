@@ -9,7 +9,7 @@ import OrderReview from '@/components/OrderReview'
 export default function ReviewPage() {
   const router = useRouter()
   const { profile } = useAuth()
-  const { files } = usePrintStore()
+  const { files, globalJobId } = usePrintStore()
   
   const [settings, setSettings] = useState<any>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -38,7 +38,9 @@ export default function ReviewPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          jobId: globalJobId,
           files: files.map(f => ({
+            id: f.id,
             fileName: f.fileName,
             fileUrl: f.url,
             fileSizeMb: parseFloat(f.fileSizeMb),
