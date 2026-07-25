@@ -35,6 +35,22 @@ def print_job(job_id, file_info, supabase_client):
         with open(local_filepath, "wb") as f:
             f.write(response)
             
+        # Manually rotate image if landscape
+        if orientation.lower() == "landscape" and filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            try:
+                from PIL import Image
+                with Image.open(local_filepath) as img:
+                    # Rotate 90 degrees and expand bounding box
+                    img_rotated = img.rotate(90, expand=True)
+                    img_rotated.save(local_filepath)
+                logger.info("Successfully rotated image to Landscape using Pillow.")
+                # Change orientation back to portrait for CUPS so it doesn't double-rotate
+                orientation = "portrait"
+            except ImportError:
+                logger.warning("Pillow not installed! Could not physically rotate image. Please run 'pip install Pillow'")
+            except Exception as e:
+                logger.warning(f"Error rotating image: {e}")
+                
         logger.info(f"File downloaded to {local_filepath}")
         
         # 2. Print depending on OS
@@ -49,9 +65,8 @@ def print_job(job_id, file_info, supabase_client):
             # Construct CUPS command with options
             lp_cmd = ["lp", "-d", printer_name]
             
-            # Copies - use both -n and -o copies
-            if copies and int(copies) > 1:
-                lp_cmd.extend(["-n", str(copies), "-o", f"copies={copies}", "-o", "Collate=True"])
+            # We removed copies from lp_cmd because we will just loop the command
+            copies_num = int(copies) if copies else 1
             
             # Sides (Duplex)
             if sides.lower() == "double":
@@ -65,7 +80,7 @@ def print_job(job_id, file_info, supabase_client):
             else:
                 lp_cmd.extend(["-o", "print-color-mode=monochrome"])
 
-            # Orientation
+            # Orientation (will be portrait if we already rotated it manually)
             if orientation.lower() == "landscape":
                 lp_cmd.extend(["-o", "landscape", "-o", "orientation-requested=4"])
             else:
@@ -77,18 +92,21 @@ def print_job(job_id, file_info, supabase_client):
             # Add the filepath at the end
             lp_cmd.append(local_filepath)
 
-            # Run the lp command
-            result = subprocess.run(
-                lp_cmd,
-                capture_output=True,
-                text=True
-            )
+            # Run the lp command multiple times for copies
+            for i in range(copies_num):
+                logger.info(f"Sending copy {i+1} of {copies_num} to CUPS...")
+                result = subprocess.run(
+                    lp_cmd,
+                    capture_output=True,
+                    text=True
+                )
+                
+                if result.returncode == 0:
+                    logger.info(f"CUPS Output: {result.stdout.strip()}")
+                else:
+                    logger.error(f"CUPS Error: {result.stderr.strip()}")
             
-            if result.returncode == 0:
-                logger.info(f"CUPS Output: {result.stdout.strip()}")
-                logger.info("Pages sent to printer successfully!")
-            else:
-                logger.error(f"CUPS Error: {result.stderr.strip()}")
+            logger.info("All copies sent to printer queue successfully!")
             
     except Exception as e:
         logger.error(f"Failed to print job: {str(e)}")
