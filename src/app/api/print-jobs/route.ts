@@ -25,13 +25,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Print job not found' }, { status: 404 })
     }
 
-    // Merge the new settings into the existing files array
-    const newFiles = (existingJob.files || []).map((fileInfo: any, index: number) => {
-      // Find matching file in body or fallback to index
-      const bodyFile = body.files && body.files[index] ? body.files[index] : {}
-      
+    // Build the new files array from the body payload which contains all uploaded files
+    const newFiles = (body.files || []).map((bodyFile: any) => {
       return {
-        ...fileInfo,
+        file_id: bodyFile.id || crypto.randomUUID(),
+        filename: bodyFile.fileName,
+        storage_path: bodyFile.storage_path,
         pages_selected: bodyFile.pageRange || 'All',
         copies: body.copies || 1,
         color_mode: body.colorMode === 'bw' ? 'B&W' : 'Color',
