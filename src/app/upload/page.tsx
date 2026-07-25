@@ -65,34 +65,31 @@ export default function UploadScreen() {
     abortControllerRef.current = new AbortController()
 
     try {
+      let completedCount = 0
       const results = []
+      
+      // Fake smooth progress while files are uploading
+      const interval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + (100 / files.length) * 0.1, 95))
+      }, 200)
+
       for (let i = 0; i < files.length; i++) {
-        setUploadIndex(i + 1)
         const item = files[i]
         const formData = new FormData()
         formData.append('file', item.file)
 
-        const fileProgressBase = (i / files.length) * 100
-        const fileProgressStep = 100 / files.length
-        
-        const interval = setInterval(() => {
-          setUploadProgress((prev) => Math.min(prev + fileProgressStep * 0.1, fileProgressBase + fileProgressStep * 0.9))
-        }, 100)
-
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
-          signal: abortControllerRef.current.signal
+          signal: abortControllerRef.current?.signal
         })
         
-        clearInterval(interval)
-        setUploadProgress(fileProgressBase + fileProgressStep)
-
         const result = await response.json()
         if (!response.ok) throw new Error(result.error)
 
-        // Read the file into memory IMMEDIATELY so Android doesn't revoke the file handle later
-        const buffer = await item.file.arrayBuffer()
+        completedCount++
+        setUploadIndex(Math.min(completedCount + 1, files.length))
+        setUploadProgress((completedCount / files.length) * 100)
 
         results.push({ 
           id: Math.random().toString(36).substring(7),
@@ -101,12 +98,13 @@ export default function UploadScreen() {
           fileSizeMb: item.size.replace(" MB", ""),
           pageCount: result.page_count || 1,
           pagesToPrint: item.pagesToPrint,
-          originalFile: item.file,
-          fileBuffer: buffer
+          originalFile: item.file
         })
       }
-
+      
+      clearInterval(interval)
       setUploadProgress(100)
+      
       usePrintStore.getState().setFiles(results)
       if (results.length > 0) {
         usePrintStore.getState().setJobData(results[0].job_id, results[0].otp)

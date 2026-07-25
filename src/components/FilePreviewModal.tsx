@@ -140,13 +140,10 @@ export default function FilePreviewModal({
 
     let url: string | null = null;
     try {
-      if (file.fileBuffer && file.fileBuffer.byteLength > 0 && file.originalFile) {
-        const blob = new Blob([file.fileBuffer], { type: file.originalFile.type });
-        url = URL.createObjectURL(blob);
-      } else if (file.originalFile) {
+      if (file.originalFile) {
         url = URL.createObjectURL(file.originalFile)
+        setObjectUrl(url)
       }
-      if (url) setObjectUrl(url)
     } catch (e) {
       console.error("Blob creation error:", e);
     }
@@ -156,19 +153,7 @@ export default function FilePreviewModal({
     
     if (isPdf) {
       try {
-        if (file.fileBuffer && file.fileBuffer.byteLength > 0) {
-          // Clone the buffer so PDF.js doesn't detach our original memory reference when transferring to the worker
-          const bufferCopy = file.fileBuffer.slice(0);
-          pdfjsLib.getDocument({ 
-            data: bufferCopy,
-            cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/cmaps/`,
-            cMapPacked: true,
-            standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/standard_fonts/`
-          }).promise.then(setPdf).catch(err => {
-            console.error(err)
-            setErrorMsg(err.message || 'Failed to load PDF document.')
-          })
-        } else if (file.originalFile) {
+        if (file.originalFile) {
           file.originalFile.arrayBuffer().then(buffer => {
             pdfjsLib.getDocument({ 
               data: buffer,

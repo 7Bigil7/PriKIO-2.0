@@ -8,7 +8,6 @@ export interface PrintFile {
   pageCount: number;
   pagesToPrint: string;
   originalFile?: File;
-  fileBuffer?: ArrayBuffer;
 }
 
 interface PrintState {
