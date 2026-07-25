@@ -42,7 +42,7 @@ export default function ReviewPage() {
           files: files.map(f => ({
             id: f.id,
             fileName: f.fileName,
-            storage_path: f.storage_path,
+            storage_path: `${f.job_id}/${f.fileName}`,
             fileUrl: f.url,
             fileSizeMb: parseFloat(f.fileSizeMb),
             pageCount: f.pageCount,
