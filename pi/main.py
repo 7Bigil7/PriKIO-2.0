@@ -78,6 +78,16 @@ def handle_job_update(payload):
         logger.info(f"Job verified, starting print for: {job_id}")
         
         files = record.get("files", [])
+        
+        # Realtime sometimes delivers JSONB arrays as strings depending on the library version
+        if isinstance(files, str):
+            import json
+            try:
+                files = json.loads(files)
+            except Exception as e:
+                logger.error(f"Error parsing files JSON: {e}")
+                files = []
+
         if files:
             for file_info in files:
                 # We pass the full file_info dict to print_job so it can read settings
